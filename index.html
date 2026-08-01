@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoodChord - Tu Cancionero e Inteligencia de Acordes</title>
+  <meta name="description" content="GoodChord: Cancionero inteligente con letras, acordes complejos, diagramas interactivos, transposición, metrónomo y recomendador por ritmo.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;800&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="brand-container" id="brand-home-btn">
+      <!-- Minimalist Guitar Logo SVG -->
+      <svg class="guitar-logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M48 20 C 35 20, 25 32, 25 45 C 25 54, 31 60, 36 65 C 32 72, 30 80, 40 90 C 52 100, 68 95, 75 82 C 82 68, 75 52, 65 48 C 60 40, 58 20, 48 20 Z" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" />
+        <circle cx="52" cy="68" r="9" stroke="currentColor" stroke-width="3.5" fill="none" />
+        <line x1="48" y1="20" x2="48" y2="5" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
+        <line x1="43" y1="7" x2="53" y2="7" stroke="currentColor" stroke-width="3" />
+        <line x1="43" y1="13" x2="53" y2="13" stroke="currentColor" stroke-width="3" />
+        <line x1="52" y1="68" x2="52" y2="10" stroke="currentColor" stroke-width="1.5" opacity="0.6" />
+      </svg>
+      <div>
+        <h1 class="brand-title">GoodChord</h1>
+        <div class="brand-tagline">Mi Baúl de Canciones & Acordes</div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="nav-btn active" data-view="view-vault">
+        <span>📚</span> Baúl
+      </button>
+      <button class="nav-btn" data-view="view-search">
+        <span>🔍</span> Buscar
+      </button>
+      <button class="nav-btn" data-view="view-lists">
+        <span>📋</span> Setlists & Listas
+      </button>
+      <button class="nav-btn" data-view="view-rhythms">
+        <span>💃</span> Ritmos
+      </button>
+      <button class="nav-btn" data-view="view-trends">
+        <span>🔥</span> Tendencias
+      </button>
+    </nav>
+
+    <!-- Header Actions -->
+    <div class="header-actions">
+      <button class="btn btn-secondary" id="open-supabase-modal-btn" title="Configurar Conexión Nube Supabase">
+        <span>⚡</span> Supabase
+      </button>
+      <button class="btn btn-primary" id="open-import-modal-btn">
+        <span>➕</span> Importar / Copiar
+      </button>
+      <button class="btn btn-secondary btn-icon" id="theme-toggle-btn" title="Cambiar Tema (Claro/Oscuro)">
+        <span id="theme-icon">🌙</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- App Main Content Container -->
+  <main class="app-main">
+
+    <!-- VIEW 1: MI BAÚL DE CANCIONES (Vault) -->
+    <section id="view-vault" class="view-section active">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <div>
+          <h2>Mi Baúl de Canciones</h2>
+          <p style="color: var(--text-secondary); font-size: 0.9rem;">Todas tus canciones guardadas con letra, acordes e inteligencia de transposición.</p>
+        </div>
+      </div>
+      <div id="vault-song-grid" class="song-grid">
+        <!-- Injected via JavaScript -->
+      </div>
+    </section>
+
+    <!-- VIEW 2: BUSCADOR & FILTROS AVANZADOS -->
+    <section id="view-search" class="view-section">
+      <div class="search-box-container">
+        <h2>Buscador y Filtros Avanzados</h2>
+        <div class="search-input-wrapper">
+          <span class="search-icon-pos">🔍</span>
+          <input type="text" id="search-query-input" class="search-input" placeholder="Buscar por título de canción, artista, letra..." />
+        </div>
+        <div class="filter-row">
+          <select id="filter-genre-select" class="select-filter">
+            <option value="">Todos los Géneros</option>
+            <option value="Rock">Rock / Rock Nacional</option>
+            <option value="Pop">Pop / Balada</option>
+            <option value="Folclore">Folclore / Zamba</option>
+            <option value="Reggae">Reggae</option>
+            <option value="Jazz">Jazz / Bossa Nova</option>
+          </select>
+
+          <select id="filter-rhythm-select" class="select-filter">
+            <option value="">Todos los Ritmos</option>
+            <option value="4/4">Compás 4/4</option>
+            <option value="3/4">Compás 3/4 (Zamba / Vals)</option>
+            <option value="Bossa">Bossa Nova</option>
+            <option value="Reggae">Reggae Off-Beat</option>
+          </select>
+
+          <select id="filter-key-select" class="select-filter">
+            <option value="">Todas las Tonalidades</option>
+            <option value="C">Tono C</option>
+            <option value="G">Tono G</option>
+            <option value="D">Tono D</option>
+            <option value="Am">Tono Am</option>
+            <option value="Em">Tono Em</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="search-results-grid" class="song-grid">
+        <!-- Search Results Injected -->
+      </div>
+    </section>
+
+    <!-- VIEW 3: SETLISTS & LISTAS (Recientes, Favoritos, etc.) -->
+    <section id="view-lists" class="view-section">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+          <h2>Listas y Setlists Personalizados</h2>
+          <p style="color: var(--text-secondary); font-size: 0.9rem;">Organiza tus canciones para recitales en vivo, ensayos o listas de reproducción.</p>
+        </div>
+        <button class="btn btn-primary" id="create-setlist-btn">
+          <span>➕</span> Nuevo Setlist
+        </button>
+      </div>
+
+      <div class="nav-tabs" style="margin-bottom: 1.5rem; justify-content: flex-start;">
+        <button class="nav-btn active" id="tab-sub-favorites">⭐ Favoritos</button>
+        <button class="nav-btn" id="tab-sub-recents">🕒 Recientes</button>
+        <button class="nav-btn" id="tab-sub-setlists">⚡ Mis Setlists</button>
+      </div>
+
+      <div id="sub-list-content">
+        <!-- Sub-list content injected -->
+      </div>
+    </section>
+
+    <!-- VIEW 4: RECOMENDACIONES POR RITMO (Estilo CifraClub) -->
+    <section id="view-rhythms" class="view-section">
+      <div style="margin-bottom: 1.5rem;">
+        <h2>Recomendado por Ritmo (Estilo CifraClub)</h2>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">Explora canciones agrupadas según la mano derecha, compás y patrón de rasgueo.</p>
+      </div>
+      <div id="rhythm-categories-container">
+        <!-- Rhythm cards injected -->
+      </div>
+    </section>
+
+    <!-- VIEW 5: TENDENCIAS EN ESPAÑOL -->
+    <section id="view-trends" class="view-section">
+      <div style="margin-bottom: 1.5rem;">
+        <h2>Canciones Tendencia en Español</h2>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">Canciones populares del momento. Importa cualquier éxito a tu baúl personal en 1 click.</p>
+      </div>
+      <div id="trends-grid" class="song-grid">
+        <!-- Trending cards injected -->
+      </div>
+    </section>
+
+    <!-- VIEW 6: INTERPRETACIÓN DE CANCIÓN (Song Viewer) -->
+    <section id="view-song-detail" class="view-section">
+      <div class="song-viewer-container">
+        <div class="song-viewer-header">
+          <div>
+            <h1 class="song-title-main" id="view-song-title">Título Canción</h1>
+            <div class="song-artist-main" id="view-song-artist">Artista</div>
+            <div class="song-meta-bar">
+              <span class="badge badge-key" id="view-song-key">Tono: C</span>
+              <span class="badge" id="view-song-rhythm">Ritmo: 4/4</span>
+              <span class="badge" id="view-song-capo">Capo: Sin capo</span>
+              <span class="badge" id="view-song-genre">Rock</span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="btn btn-secondary" id="song-fav-toggle-btn">⭐ Favorito</button>
+            <button class="btn btn-secondary" id="song-edit-btn">✏️ Editar</button>
+            <button class="btn btn-primary" id="song-pdf-export-btn">📄 Exportar PDF</button>
+            <button class="btn btn-secondary" id="song-back-btn">⬅ Volver</button>
+          </div>
+        </div>
+
+        <!-- Song Control Toolbar -->
+        <div class="song-toolbar">
+          <!-- Transposition Group -->
+          <div class="toolbar-group">
+            <span class="toolbar-label">Trasponer Tono:</span>
+            <button class="btn btn-secondary" id="transpose-down-btn" title="-1 Semitono">-</button>
+            <div class="key-box" id="active-key-display">C</div>
+            <button class="btn btn-secondary" id="transpose-up-btn" title="+1 Semitono">+</button>
+            <button class="btn btn-secondary" id="transpose-reset-btn" title="Restablecer Tono Original">Reset</button>
+            <button class="btn btn-secondary" id="accidental-toggle-btn" title="Alternar Sostenidos / Bemoles"># / ♭</button>
+          </div>
+
+          <!-- Embedded Metronome Bar -->
+          <div class="metronome-bar">
+            <span class="toolbar-label">Metrónomo:</span>
+            <button class="btn btn-primary btn-icon" id="metronome-start-btn" title="Iniciar / Detener Metrónomo">▶</button>
+            <span id="bpm-display-text" style="font-weight: 800; font-family: var(--font-mono); min-width: 60px;">120 BPM</span>
+            <input type="range" id="bpm-range-input" class="bpm-slider" min="30" max="240" value="120" />
+            <button class="btn btn-secondary" id="tap-tempo-btn" title="Toca el ritmo para calcular BPM">Tap</button>
+            <div class="beat-indicators" id="beat-indicators-container">
+              <div class="beat-dot"></div>
+              <div class="beat-dot"></div>
+              <div class="beat-dot"></div>
+              <div class="beat-dot"></div>
+            </div>
+          </div>
+
+          <!-- Auto-Scroll Group -->
+          <div class="toolbar-group">
+            <span class="toolbar-label">Auto-Scroll:</span>
+            <button class="btn btn-secondary" id="autoscroll-toggle-btn">▶ Iniciar</button>
+            <input type="range" id="autoscroll-speed-input" min="1" max="10" value="3" style="width: 70px;" />
+          </div>
+        </div>
+
+        <!-- Interactive Lyric Sheet -->
+        <div id="lyric-sheet-body" class="lyric-sheet">
+          <!-- Formatted lines with chord badges injected -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL 1: CHORD DIAGRAM POPOVER MODAL -->
+  <div class="modal-overlay" id="chord-modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="chord-modal-title">Acorde: C</h3>
+        <button class="close-btn" id="chord-modal-close">✕</button>
+      </div>
+
+      <div class="fretboard-container" id="fretboard-svg-holder">
+        <!-- SVG Fretboard Diagram Rendered -->
+      </div>
+
+      <div class="position-selector">
+        <button class="btn btn-secondary" id="chord-pos-prev-btn">◀ Anterior</button>
+        <span id="chord-pos-indicator" style="font-weight: 700; font-size: 0.9rem;">Posición 1 de 2</span>
+        <button class="btn btn-secondary" id="chord-pos-next-btn">Siguiente ▶</button>
+      </div>
+
+      <div style="margin-top: 1rem; font-size: 0.78rem; color: var(--text-muted); text-align: center;">
+        💡 <strong>Leyenda:</strong> 1=Índice, 2=Mayor, 3=Anular, 4=Meñique | ✕=Muteada, ◯=Al aire
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: IMPORT / COPY-PASTE / AI PARSER -->
+  <div class="modal-overlay" id="import-modal-overlay">
+    <div class="modal-card" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Importar o Pegar Canción</h3>
+        <button class="close-btn" id="import-modal-close">✕</button>
+      </div>
+
+      <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1rem;">
+        Copia la letra y acordes de cualquier sitio (CifraClub, LaCuerda, Ultimate-Guitar) y la IA detectará automáticamente el título, artista, ritmo y posición de acordes.
+      </p>
+
+      <div class="form-group">
+        <label class="form-label">Pega la canción completa aquí:</label>
+        <textarea id="import-raw-text-area" class="form-textarea" placeholder="Título: Ejemplo&#10;Artista: Grupo&#10;[Intro]&#10;C  G  Am  F&#10;Pega el texto aquí..."></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button class="btn btn-secondary" id="import-cancel-btn">Cancelar</button>
+        <button class="btn btn-primary" id="import-save-btn">✨ Reconocer e Importar al Baúl</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: CONFIGURACIÓN SUPABASE CLOUD -->
+  <div class="modal-overlay" id="supabase-modal-overlay">
+    <div class="modal-card" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title">⚡ Conectar con Supabase Cloud</h3>
+        <button class="close-btn" id="supabase-modal-close">✕</button>
+      </div>
+
+      <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1rem;">
+        Conecta GoodChord a tu proyecto en Supabase para sincronizar tus canciones y setlists en la nube en tiempo real.
+      </p>
+
+      <div class="form-group">
+        <label class="form-label">SUPABASE_URL:</label>
+        <input type="text" id="supabase-url-input" class="form-input" placeholder="https://xyz.supabase.co" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">SUPABASE_ANON_KEY:</label>
+        <input type="password" id="supabase-key-input" class="form-input" placeholder="eyJhbGciOiJIUzI1NiIsInR..." />
+      </div>
+
+      <div id="supabase-status-msg" style="font-size: 0.85rem; margin-bottom: 1rem; text-align: center;"></div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button class="btn btn-secondary" id="supabase-cancel-btn">Cancelar</button>
+        <button class="btn btn-primary" id="supabase-save-btn">⚡ Conectar y Sincronizar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- App Script Entrypoint -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
