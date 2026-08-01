@@ -1,33 +1,34 @@
 /**
  * GoodChord - Supabase Integration Module
- * Handles cloud database synchronization for songs, setlists, and user favorites.
- * Gracefully falls back to LocalStorage if credentials are not provided.
+ * Pre-configured with default credentials for automatic zero-config cloud sync.
  */
 
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/+esm';
+
+const DEFAULT_SUPABASE_URL = "https://ggnljououyjckgsbpnna.supabase.co";
+const DEFAULT_SUPABASE_KEY = "sb_publishable_20ml-0B6GVU60T1YLl8zcQ_BFGjYpZA";
 
 const STORAGE_SUPABASE_URL = "goodchord_supabase_url";
 const STORAGE_SUPABASE_KEY = "goodchord_supabase_key";
 
 export class SupabaseService {
   constructor() {
-    this.url = localStorage.getItem(STORAGE_SUPABASE_URL) || "";
-    this.key = localStorage.getItem(STORAGE_SUPABASE_KEY) || "";
+    this.url = localStorage.getItem(STORAGE_SUPABASE_URL) || DEFAULT_SUPABASE_URL;
+    this.key = localStorage.getItem(STORAGE_SUPABASE_KEY) || DEFAULT_SUPABASE_KEY;
     this.client = null;
 
-    if (this.url && this.key) {
-      this.initClient(this.url, this.key);
-    }
+    // Automatically connect on initialization
+    this.initClient(this.url, this.key);
   }
 
   initClient(url, key) {
     try {
-      this.url = url;
-      this.key = key;
-      localStorage.setItem(STORAGE_SUPABASE_URL, url);
-      localStorage.setItem(STORAGE_SUPABASE_KEY, key);
-      this.client = createClient(url, key);
-      console.log("⚡ Conectado exitosamente a Supabase Cloud DB");
+      this.url = url || DEFAULT_SUPABASE_URL;
+      this.key = key || DEFAULT_SUPABASE_KEY;
+      localStorage.setItem(STORAGE_SUPABASE_URL, this.url);
+      localStorage.setItem(STORAGE_SUPABASE_KEY, this.key);
+      this.client = createClient(this.url, this.key);
+      console.log("⚡ Conexión automática establecida con Supabase Cloud DB");
       return true;
     } catch (e) {
       console.error("Error al inicializar Supabase:", e);
@@ -39,7 +40,18 @@ export class SupabaseService {
     return !!this.client;
   }
 
-  // Sync Songs with Supabase
+  // Check live connection to Supabase DB
+  async checkConnection() {
+    if (!this.client) return false;
+    try {
+      const { data, error } = await this.client.from('songs').select('id').limit(1);
+      return !error;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Fetch all songs from Supabase
   async fetchSongs() {
     if (!this.client) return null;
     try {
@@ -60,7 +72,7 @@ export class SupabaseService {
         bpm: item.bpm,
         capo: item.capo,
         rawText: item.raw_text,
-        favorite: item.is_favorite
+        favorite: !!item.is_favorite
       }));
     } catch (e) {
       console.warn("Error leyendo canciones desde Supabase:", e);
@@ -68,6 +80,7 @@ export class SupabaseService {
     }
   }
 
+  // Save/Update a single song
   async saveSong(song) {
     if (!this.client) return false;
     try {
@@ -96,7 +109,43 @@ export class SupabaseService {
     }
   }
 
-  // Sync Setlists with Supabase
+  // Update Favorite status only
+  async updateFavoriteStatus(songId, isFavorite) {
+    if (!this.client) return false;
+    try {
+      const { error } = await this.client
+        .from('songs')
+        .update({ is_favorite: isFavorite })
+        .eq('id', songId);
+
+      if (error) throw error;
+      return true;
+    } catch (e) {
+      console.warn("Error actualizando favorito en Supabase:", e);
+      return false;
+    }
+  }
+
+  // Seed default initial songs into Supabase if missing
+  async seedPreloadedSongs(initialSongs) {
+    if (!this.client) return;
+    try {
+      const existing = await this.fetchSongs();
+      const existingIds = new Set((existing || []).map(s => s.id));
+
+      const missing = initialSongs.filter(s => !existingIds.has(s.id));
+      if (missing.length > 0) {
+        console.log(`Subiendo ${missing.length} canciones iniciales a Supabase...`);
+        for (const song of missing) {
+          await this.saveSong(song);
+        }
+      }
+    } catch (e) {
+      console.warn("Error sembrando canciones iniciales:", e);
+    }
+  }
+
+  // Fetch setlists
   async fetchSetlists() {
     if (!this.client) return null;
     try {
