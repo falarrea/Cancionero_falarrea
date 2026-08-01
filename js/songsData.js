@@ -6,7 +6,7 @@
 
 export const INITIAL_SONGS = [
   {
-    id: "song-1",
+    id: "song-01",
     title: "Muchacha (Ojos de papel)",
     artist: "Almendra / Luis Alberto Spinetta",
     genre: "Rock Nacional / Acústico",
@@ -49,7 +49,7 @@ Que enmarque tu cuerpo en esta melodía
 G  Gmaj7  Cadd9  G/B  Am7  D7  G`
   },
   {
-    id: "song-2",
+    id: "song-02",
     title: "De Música Ligera",
     artist: "Soda Stereo / Gustavo Cerati",
     genre: "Rock en Español",
@@ -100,7 +100,7 @@ Bm      G       D     A
 Nada nos libra, nada más queda... ¡Gracias totales!`
   },
   {
-    id: "song-3",
+    id: "song-03",
     title: "Hasta la Raíz",
     artist: "Natalia Lafourcade",
     genre: "Folclore Pop",
@@ -146,7 +146,7 @@ Gadd9       A7sus4
 Donde el viento abrigue el corazón`
   },
   {
-    id: "song-4",
+    id: "song-04",
     title: "Luna Tucumana",
     artist: "Atahualpa Yupanqui / Mercedes Sosa",
     genre: "Folclore Argentino",
@@ -187,7 +187,7 @@ Sos caballito de sol
 Am  Dm  E7  Am`
   },
   {
-    id: "song-5",
+    id: "song-05",
     title: "11 y 6",
     artist: "Fito Páez",
     genre: "Rock Nacional",
@@ -227,7 +227,7 @@ Cadd9         D7            G
 Que la noche entera pierde la amargura`
   },
   {
-    id: "song-6",
+    id: "song-06",
     title: "Te Guardo",
     artist: "Silvana Estrada",
     genre: "Jazz Folclórico",
@@ -267,7 +267,7 @@ Fmaj7              G13         Cmaj7
 Esperando el milagro de tu amor`
   },
   {
-    id: "song-7",
+    id: "song-07",
     title: "Tus Ojos",
     artist: "Los Cafres",
     genre: "Reggae",
@@ -298,7 +298,7 @@ Un faro en medio de mi destino
 
 [Estribillo]
 Cadd9              D
-Y yo quiero estar contigo
+Y yoquiero estar contigo
 G         D/F#     Em
 Sentir el calor de tu abrigo
 Cadd9              D

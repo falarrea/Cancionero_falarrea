@@ -1,5 +1,5 @@
 /**
- * GoodChord - Supabase Integration Module (v2.3 Robust Diagnostics)
+ * GoodChord - Supabase Integration Module (v2.6 Delete Operations)
  * Pre-configured with default credentials for automatic zero-config cloud sync.
  */
 
@@ -17,7 +17,6 @@ export class SupabaseService {
     this.key = localStorage.getItem(STORAGE_SUPABASE_KEY) || DEFAULT_SUPABASE_KEY;
     this.client = null;
 
-    // Automatically connect on initialization
     this.initClient(this.url, this.key);
   }
 
@@ -40,7 +39,6 @@ export class SupabaseService {
     return !!this.client;
   }
 
-  // Check live connection status to Supabase Cloud
   async checkConnection() {
     if (!this.client) return { connected: false, message: "Sin cliente" };
     try {
@@ -50,20 +48,16 @@ export class SupabaseService {
         return { connected: true, message: "🟢 Supabase Conectado" };
       }
       
-      // If table doesn't exist yet (Postgres error 42P01)
       if (error.code === '42P01' || error.message.includes('does not exist')) {
         return { connected: true, needsSql: true, message: "⚠️ Conectado (Falta ejecutar SQL)" };
       }
 
-      console.warn("Respuesta de diagnóstico Supabase:", error);
       return { connected: false, message: "🔴 Error de conexión" };
     } catch (e) {
-      console.error("Excepción de diagnóstico Supabase:", e);
       return { connected: false, message: "🔴 Offline" };
     }
   }
 
-  // Fetch all songs from Supabase
   async fetchSongs() {
     if (!this.client) return null;
     try {
@@ -92,7 +86,6 @@ export class SupabaseService {
     }
   }
 
-  // Save/Update a single song
   async saveSong(song) {
     if (!this.client) return false;
     try {
@@ -121,7 +114,24 @@ export class SupabaseService {
     }
   }
 
-  // Update Favorite status only
+  // Delete song from Supabase Cloud DB
+  async deleteSong(songId) {
+    if (!this.client) return false;
+    try {
+      const { error } = await this.client
+        .from('songs')
+        .delete()
+        .eq('id', songId);
+
+      if (error) throw error;
+      console.log(`🗑️ Canción ${songId} eliminada de Supabase`);
+      return true;
+    } catch (e) {
+      console.error("Error eliminando canción de Supabase:", e);
+      return false;
+    }
+  }
+
   async updateFavoriteStatus(songId, isFavorite) {
     if (!this.client) return false;
     try {
@@ -138,7 +148,6 @@ export class SupabaseService {
     }
   }
 
-  // Seed default initial songs into Supabase if missing
   async seedPreloadedSongs(initialSongs) {
     if (!this.client) return;
     try {
@@ -157,7 +166,6 @@ export class SupabaseService {
     }
   }
 
-  // Fetch setlists
   async fetchSetlists() {
     if (!this.client) return null;
     try {

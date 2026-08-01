@@ -1,5 +1,5 @@
 /* ==========================================================================
-   GoodChord - Design System & Modern Responsive Stylesheet (v2.1 Fixes)
+   GoodChord - Design System & Modern Responsive Stylesheet (v2.7 Delete Fixes)
    Glassmorphism, Dark/Light Themes, Modal Fixes, Font Zoom & Supabase Status
    ========================================================================== */
 
@@ -241,6 +241,18 @@ body {
 
 .btn-secondary:hover {
   background: var(--bg-card-hover);
+}
+
+.btn-danger {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+
+.btn-danger:hover {
+  background: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 .btn-icon {
@@ -596,7 +608,7 @@ body {
   color: var(--text-primary);
 }
 
-/* Form Layout Fixes (2-column responsive grid) */
+/* Form Layout Fixes */
 .form-grid-2col {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));

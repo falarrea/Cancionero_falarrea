@@ -1,7 +1,7 @@
 /**
- * GoodChord - Main Application Controller (v2.4 Fixes)
+ * GoodChord - Main Application Controller (v2.8 Complete Song Deletion)
  * Orchestrates views, transposition, chord diagrams, metronome, setlists, search,
- * Supabase Cloud Sync, Full Song Editor, PWA installation, and Font-size controls.
+ * Supabase Cloud Sync, Full Song Editor, PWA installation, Sequential IDs, and Delete Operations.
  */
 
 import { transposeChord, getChordPositions, renderChordSVG } from './chordEngine.js';
@@ -44,6 +44,20 @@ class App {
     this.renderVault();
     this.renderRhythmCategories();
     this.renderTrends();
+  }
+
+  generateNextSongId() {
+    let maxNum = 0;
+    this.allSongs.forEach(s => {
+      if (s.id && s.id.startsWith('song-')) {
+        const numPart = parseInt(s.id.replace('song-', ''), 10);
+        if (!isNaN(numPart) && numPart > maxNum) {
+          maxNum = numPart;
+        }
+      }
+    });
+    const nextNum = maxNum + 1;
+    return `song-${String(nextNum).padStart(2, '0')}`;
   }
 
   registerPWA() {
@@ -156,6 +170,8 @@ class App {
     // Edit Modal DOM
     this.editModalOverlay = document.getElementById('edit-modal-overlay');
     this.songEditBtn = document.getElementById('song-edit-btn');
+    this.songDeleteBtn = document.getElementById('song-delete-btn');
+    this.editDeleteBtn = document.getElementById('edit-delete-btn');
     this.editModalClose = document.getElementById('edit-modal-close');
     this.editCancelBtn = document.getElementById('edit-cancel-btn');
     this.editSaveBtn = document.getElementById('edit-save-btn');
@@ -184,7 +200,7 @@ class App {
     this.filterKeySelect = document.getElementById('filter-key-select');
     this.searchResultsGrid = document.getElementById('search-results-grid');
 
-    // PDF Export
+    // PDF Export & Back
     this.songPdfExportBtn = document.getElementById('song-pdf-export-btn');
     this.songBackBtn = document.getElementById('song-back-btn');
     this.songFavToggleBtn = document.getElementById('song-fav-toggle-btn');
@@ -287,11 +303,23 @@ class App {
       }
     });
 
-    // Edit Modal Handlers
+    // Edit & Delete Modal Handlers
     this.songEditBtn.addEventListener('click', () => this.openEditModal());
     this.editModalClose.addEventListener('click', () => this.closeEditModal());
     this.editCancelBtn.addEventListener('click', () => this.closeEditModal());
     this.editSaveBtn.addEventListener('click', () => this.handleSaveEditedSong());
+
+    // Delete Song Handlers
+    this.songDeleteBtn.addEventListener('click', () => {
+      if (this.activeSong) this.handleDeleteSong(this.activeSong.id);
+    });
+
+    this.editDeleteBtn.addEventListener('click', () => {
+      if (this.activeSong) {
+        this.closeEditModal();
+        this.handleDeleteSong(this.activeSong.id);
+      }
+    });
 
     // Supabase Modal Handlers
     this.openSupabaseModalBtn.addEventListener('click', () => {
@@ -355,6 +383,28 @@ class App {
     });
   }
 
+  // Delete Song Handler
+  async handleDeleteSong(songId) {
+    const song = this.allSongs.find(s => s.id === songId);
+    if (!song) return;
+
+    const confirmDelete = confirm(`¿Estás seguro de que deseas eliminar "${song.title}" de tu baúl y de Supabase?`);
+    if (!confirmDelete) return;
+
+    // 1. Remove from local state array
+    this.allSongs = this.allSongs.filter(s => s.id !== songId);
+
+    // 2. Remove from LocalStorage setlists & custom songs
+    this.setlistManager.deleteCustomSong(songId);
+
+    // 3. Remove from Supabase Cloud DB
+    await this.supabaseService.deleteSong(songId);
+
+    // 4. Update UI
+    this.renderVault();
+    this.switchView('view-vault');
+  }
+
   // Resizes font size dynamically
   changeFontSize(delta) {
     this.fontScale = Math.min(Math.max(this.fontScale + delta, 70), 220);
@@ -408,7 +458,9 @@ class App {
       </div>
       <div class="song-card-footer">
         <span style="font-size: 0.8rem; color: var(--text-muted);">${song.bpm || 120} BPM</span>
-        <button class="fav-btn ${isFav ? 'active' : ''}">★</button>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button class="fav-btn ${isFav ? 'active' : ''}">★</button>
+        </div>
       </div>
     `;
 
@@ -638,8 +690,10 @@ class App {
       if (!genre) genre = enhanced.genre;
     }
 
+    const nextId = this.generateNextSongId();
+
     const newSong = {
-      id: "custom-" + Date.now(),
+      id: nextId,
       title,
       artist,
       genre: genre || "Pop",
@@ -864,8 +918,10 @@ class App {
 
       card.querySelector('.import-trend-btn').addEventListener('click', async (e) => {
         e.stopPropagation();
+
+        const nextId = this.generateNextSongId();
         const newSong = {
-          id: "trend-imported-" + Date.now(),
+          id: nextId,
           title: trend.title,
           artist: trend.artist,
           genre: trend.genre,

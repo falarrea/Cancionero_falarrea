@@ -200,6 +200,7 @@
           <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
             <button class="btn btn-secondary" id="song-fav-toggle-btn">⭐ Favorito</button>
             <button class="btn btn-secondary" id="song-edit-btn">✏️ Editar</button>
+            <button class="btn btn-secondary btn-danger" id="song-delete-btn" title="Eliminar Canción">🗑️ Eliminar</button>
             <button class="btn btn-primary" id="song-pdf-export-btn">📄 Exportar PDF</button>
             <button class="btn btn-secondary" id="song-back-btn">⬅ Volver</button>
           </div>
@@ -281,7 +282,7 @@
     </div>
   </div>
 
-  <!-- MODAL 2: CREAR / IMPORTAR CANCIÓN (ENHANCED FORM GRID) -->
+  <!-- MODAL 2: CREAR / IMPORTAR CANCIÓN -->
   <div class="modal-overlay" id="import-modal-overlay">
     <div class="modal-card">
       <div class="modal-header">
@@ -381,9 +382,12 @@
         <textarea id="edit-raw-text-area" class="form-textarea"></textarea>
       </div>
 
-      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
-        <button class="btn btn-secondary" id="edit-cancel-btn">Cancelar</button>
-        <button class="btn btn-primary" id="edit-save-btn">💾 Guardar Cambios</button>
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;">
+        <button class="btn btn-secondary btn-danger" id="edit-delete-btn">🗑️ Eliminar Canción</button>
+        <div style="display: flex; gap: 0.75rem;">
+          <button class="btn btn-secondary" id="edit-cancel-btn">Cancelar</button>
+          <button class="btn btn-primary" id="edit-save-btn">💾 Guardar Cambios</button>
+        </div>
       </div>
     </div>
   </div>
