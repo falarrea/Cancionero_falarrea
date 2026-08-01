@@ -6,6 +6,13 @@
   <title>GoodChord - Tu Cancionero e Inteligencia de Acordes</title>
   <meta name="description" content="GoodChord: Cancionero inteligente con letras, acordes complejos, diagramas interactivos, transposición, metrónomo y recomendador por ritmo.">
   
+  <!-- PWA Settings for Mobile -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6366f1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="GoodChord">
+
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -55,11 +62,17 @@
 
     <!-- Header Actions -->
     <div class="header-actions">
+      <!-- Connection Status Badge -->
+      <div id="db-status-pill" class="status-pill disconnected" title="Estado de conexión con Supabase">
+        <span class="status-dot"></span>
+        <span id="db-status-text">Sin Conectar</span>
+      </div>
+
       <button class="btn btn-secondary" id="open-supabase-modal-btn" title="Configurar Conexión Nube Supabase">
         <span>⚡</span> Supabase
       </button>
       <button class="btn btn-primary" id="open-import-modal-btn">
-        <span>➕</span> Importar / Copiar
+        <span>➕</span> Nueva Canción
       </button>
       <button class="btn btn-secondary btn-icon" id="theme-toggle-btn" title="Cambiar Tema (Claro/Oscuro)">
         <span id="theme-icon">🌙</span>
@@ -196,12 +209,20 @@
         <div class="song-toolbar">
           <!-- Transposition Group -->
           <div class="toolbar-group">
-            <span class="toolbar-label">Trasponer Tono:</span>
+            <span class="toolbar-label">Trasponer:</span>
             <button class="btn btn-secondary" id="transpose-down-btn" title="-1 Semitono">-</button>
             <div class="key-box" id="active-key-display">C</div>
             <button class="btn btn-secondary" id="transpose-up-btn" title="+1 Semitono">+</button>
             <button class="btn btn-secondary" id="transpose-reset-btn" title="Restablecer Tono Original">Reset</button>
             <button class="btn btn-secondary" id="accidental-toggle-btn" title="Alternar Sostenidos / Bemoles"># / ♭</button>
+          </div>
+
+          <!-- Font Size Adjustment Group -->
+          <div class="toolbar-group">
+            <span class="toolbar-label">Letra:</span>
+            <button class="btn btn-secondary" id="font-size-dec-btn" title="Reducir tamaño de letra">A-</button>
+            <span id="font-size-value-display" style="font-weight: 700; font-size: 0.85rem; min-width: 40px; text-align: center;">100%</span>
+            <button class="btn btn-secondary" id="font-size-inc-btn" title="Aumentar tamaño de letra">A+</button>
           </div>
 
           <!-- Embedded Metronome Bar -->
@@ -260,31 +281,114 @@
     </div>
   </div>
 
-  <!-- MODAL 2: IMPORT / COPY-PASTE / AI PARSER -->
+  <!-- MODAL 2: CREAR / IMPORTAR CANCIÓN (ENHANCED) -->
   <div class="modal-overlay" id="import-modal-overlay">
-    <div class="modal-card" style="max-width: 600px;">
+    <div class="modal-card" style="max-width: 650px;">
       <div class="modal-header">
-        <h3 class="modal-title">Importar o Pegar Canción</h3>
+        <h3 class="modal-title">➕ Crear / Importar Canción</h3>
         <button class="close-btn" id="import-modal-close">✕</button>
       </div>
 
-      <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1rem;">
-        Copia la letra y acordes de cualquier sitio (CifraClub, LaCuerda, Ultimate-Guitar) y la IA detectará automáticamente el título, artista, ritmo y posición de acordes.
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+        Completa los campos o pega la canción de CifraClub/LaCuerda y presiona <strong>✨ Autodetectar con IA</strong> para llenar todo en un clic.
       </p>
 
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label">Título de la canción:</label>
+          <input type="text" id="import-title-input" class="form-input" placeholder="ej. Muchacha (Ojos de papel)" />
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label">Artista / Grupo:</label>
+          <input type="text" id="import-artist-input" class="form-input" placeholder="ej. Almendra / Spinetta" />
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label">Tono:</label>
+          <input type="text" id="import-key-input" class="form-input" placeholder="ej. G" />
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label">Ritmo:</label>
+          <input type="text" id="import-rhythm-input" class="form-input" placeholder="ej. 4/4" />
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label">Género:</label>
+          <input type="text" id="import-genre-input" class="form-input" placeholder="ej. Rock" />
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label">BPM:</label>
+          <input type="number" id="import-bpm-input" class="form-input" placeholder="120" value="120" />
+        </div>
+      </div>
+
       <div class="form-group">
-        <label class="form-label">Pega la canción completa aquí:</label>
-        <textarea id="import-raw-text-area" class="form-textarea" placeholder="Título: Ejemplo&#10;Artista: Grupo&#10;[Intro]&#10;C  G  Am  F&#10;Pega el texto aquí..."></textarea>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+          <label class="form-label" style="margin: 0;">Letra y Acordes:</label>
+          <button class="btn btn-secondary" id="import-auto-detect-btn" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">✨ Autodetectar con IA</button>
+        </div>
+        <textarea id="import-raw-text-area" class="form-textarea" placeholder="Pega aquí el texto completo con acordes...&#10;[Intro]&#10;C  G  Am  F&#10;Letra..."></textarea>
       </div>
 
       <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
         <button class="btn btn-secondary" id="import-cancel-btn">Cancelar</button>
-        <button class="btn btn-primary" id="import-save-btn">✨ Reconocer e Importar al Baúl</button>
+        <button class="btn btn-primary" id="import-save-btn">💾 Guardar Canción en el Baúl</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL 3: CONFIGURACIÓN SUPABASE CLOUD -->
+  <!-- MODAL 3: EDITAR CANCIÓN (NEW) -->
+  <div class="modal-overlay" id="edit-modal-overlay">
+    <div class="modal-card" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3 class="modal-title">✏️ Editar Canción</h3>
+        <button class="close-btn" id="edit-modal-close">✕</button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label">Título:</label>
+          <input type="text" id="edit-title-input" class="form-input" />
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label">Artista:</label>
+          <input type="text" id="edit-artist-input" class="form-input" />
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label">Tono:</label>
+          <input type="text" id="edit-key-input" class="form-input" />
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label">Ritmo:</label>
+          <input type="text" id="edit-rhythm-input" class="form-input" />
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label">Género:</label>
+          <input type="text" id="edit-genre-input" class="form-input" />
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label">BPM:</label>
+          <input type="number" id="edit-bpm-input" class="form-input" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Letra y Acordes (Texto Completo):</label>
+        <textarea id="edit-raw-text-area" class="form-textarea"></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button class="btn btn-secondary" id="edit-cancel-btn">Cancelar</button>
+        <button class="btn btn-primary" id="edit-save-btn">💾 Guardar Cambios</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: CONFIGURACIÓN SUPABASE CLOUD -->
   <div class="modal-overlay" id="supabase-modal-overlay">
     <div class="modal-card" style="max-width: 500px;">
       <div class="modal-header">
