@@ -1,6 +1,6 @@
 /* ==========================================================================
-   GoodChord - Design System & Modern Responsive Stylesheet
-   Glassmorphism, Dark/Light Themes, Chord Diagrams, Metronome & PDF Print Rules
+   GoodChord - Design System & Modern Responsive Stylesheet (v2.1 Fixes)
+   Glassmorphism, Dark/Light Themes, Modal Fixes, Font Zoom & Supabase Status
    ========================================================================== */
 
 :root {
@@ -33,6 +33,9 @@
 
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Dynamic Lyric Font Size */
+  --lyric-font-size: 1.05rem;
 }
 
 [data-theme="light"] {
@@ -64,7 +67,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 body {
@@ -75,6 +78,48 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* Connection Status Badge Pill */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  user-select: none;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.status-pill.connected .status-dot {
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.status-pill.connected {
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.status-pill.disconnected .status-dot {
+  background: #ef4444;
+}
+
+.status-pill.disconnected {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.08);
 }
 
 /* Header & Brand Navigation */
@@ -175,6 +220,7 @@ body {
   border: 1px solid transparent;
   cursor: pointer;
   user-select: none;
+  white-space: nowrap;
 }
 
 .btn-primary {
@@ -184,7 +230,6 @@ body {
 
 .btn-primary:hover {
   background: var(--accent-hover);
-  transform: translateY(-1px);
   box-shadow: 0 4px 14px var(--accent-glow);
 }
 
@@ -219,11 +264,11 @@ body {
 
 .view-section.active {
   display: block;
-  animation: fadeIn 0.25s ease-out forwards;
+  animation: fadeIn 0.2s ease-out forwards;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -249,7 +294,7 @@ body {
 
 .song-card:hover {
   border-color: var(--accent-color);
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
@@ -310,7 +355,7 @@ body {
   color: #f59e0b;
 }
 
-/* Song View / Interpretación Layout */
+/* Song View Layout */
 .song-viewer-container {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -425,23 +470,19 @@ body {
   accent-color: var(--accent-color);
 }
 
-/* Interactive Lyric Sheet Format */
+/* Dynamic Interactive Lyric Sheet Format */
 .lyric-sheet {
   font-family: var(--font-sans);
-  font-size: 1.05rem;
+  font-size: var(--lyric-font-size, 1.05rem) !important;
   line-height: 2.2;
   white-space: pre-wrap;
   user-select: text;
 }
 
-.lyric-block {
-  margin-bottom: 1.25rem;
-}
-
 .section-header {
   font-weight: 800;
   color: var(--accent-color);
-  font-size: 0.88rem;
+  font-size: calc(var(--lyric-font-size, 1.05rem) * 0.85) !important;
   letter-spacing: 1px;
   text-transform: uppercase;
   margin-top: 1.25rem;
@@ -468,7 +509,7 @@ body {
 .chord-badge {
   font-family: var(--font-mono);
   font-weight: 800;
-  font-size: 0.95rem;
+  font-size: calc(var(--lyric-font-size, 1.05rem) * 0.9) !important;
   color: var(--chord-color);
   background: var(--chord-bg);
   padding: 0.1rem 0.4rem;
@@ -487,15 +528,15 @@ body {
 }
 
 .lyric-text {
-  font-size: 1.05rem;
+  font-size: var(--lyric-font-size, 1.05rem) !important;
   color: var(--text-primary);
 }
 
-/* Interactive Chord Popover Modal */
+/* Modal Overlay & Card Fixes */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
@@ -503,6 +544,7 @@ body {
   z-index: 1000;
   opacity: 0;
   pointer-events: none;
+  padding: 1rem;
 }
 
 .modal-overlay.open {
@@ -514,12 +556,15 @@ body {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 1.75rem;
-  width: 90%;
-  max-width: 440px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 580px;
   box-shadow: var(--shadow-lg);
   transform: scale(0.95);
-  transition: transform 0.25s ease-out;
+  transition: transform 0.2s ease-out;
+  max-height: 90vh;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .modal-overlay.open .modal-card {
@@ -534,7 +579,7 @@ body {
 }
 
 .modal-title {
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   font-weight: 800;
   color: var(--text-primary);
 }
@@ -551,6 +596,55 @@ body {
   color: var(--text-primary);
 }
 
+/* Form Layout Fixes (2-column responsive grid) */
+.form-grid-2col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.88rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.form-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.form-input, .form-textarea {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 0.6rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.92rem;
+  font-family: inherit;
+}
+
+.form-input:focus, .form-textarea:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.form-textarea {
+  font-family: var(--font-mono);
+  min-height: 160px;
+  resize: vertical;
+}
+
+/* Fretboard SVG Container */
 .fretboard-container {
   display: flex;
   justify-content: center;
@@ -605,12 +699,6 @@ body {
   font-size: 1rem;
 }
 
-.search-input:focus {
-  outline: none;
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px var(--accent-light);
-}
-
 .search-icon-pos {
   position: absolute;
   left: 0.85rem;
@@ -633,34 +721,27 @@ body {
   font-weight: 500;
 }
 
-/* Form Styles for Import/Edit Modal */
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  margin-bottom: 1rem;
-}
-
-.form-label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.form-input, .form-textarea {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  padding: 0.65rem 0.88rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.95rem;
-  font-family: inherit;
-}
-
-.form-textarea {
-  font-family: var(--font-mono);
-  min-height: 180px;
-  resize: vertical;
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+  .app-header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.75rem;
+  }
+  .nav-tabs {
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .song-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .toolbar-group {
+    justify-content: space-between;
+  }
+  .song-viewer-container {
+    padding: 1rem;
+  }
 }
 
 /* Print Rules (Export PDF) */
@@ -669,7 +750,7 @@ body {
     background: #ffffff !important;
     color: #000000 !important;
   }
-  .app-header, .song-toolbar, .btn, .modal-overlay, .nav-tabs {
+  .app-header, .song-toolbar, .btn, .modal-overlay, .nav-tabs, .status-pill {
     display: none !important;
   }
   .song-viewer-container {

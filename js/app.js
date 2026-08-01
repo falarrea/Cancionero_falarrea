@@ -1,6 +1,7 @@
 /**
- * GoodChord - Main Application Controller
- * Orchestrates views, transposition, interactive chord diagrams, metronome, setlists, search and Supabase sync.
+ * GoodChord - Main Application Controller (v2.4 Fixes)
+ * Orchestrates views, transposition, chord diagrams, metronome, setlists, search,
+ * Supabase Cloud Sync, Full Song Editor, PWA installation, and Font-size controls.
  */
 
 import { transposeChord, getChordPositions, renderChordSVG } from './chordEngine.js';
@@ -12,19 +13,20 @@ import { TRENDING_SPANISH_SONGS, RHYTHM_CATEGORIES } from './trendsData.js';
 import { exportSongToPDF } from './pdfExporter.js';
 import { SupabaseService } from './supabaseClient.js';
 
-// Application State
 class App {
   constructor() {
     this.setlistManager = new SetlistManager();
     this.metronome = new Metronome();
     this.supabaseService = new SupabaseService();
-    
-    // Combine preloaded and custom songs
+
     this.allSongs = [...INITIAL_SONGS, ...this.setlistManager.customSongs];
 
     this.activeSong = null;
     this.currentSemitones = 0;
     this.preferFlat = false;
+
+    // Font size scale (%)
+    this.fontScale = 100;
 
     // Chord Popover Modal State
     this.activeModalChord = null;
@@ -37,19 +39,50 @@ class App {
 
     this.initDOM();
     this.bindEvents();
-    this.syncWithSupabase();
+    this.registerPWA();
+    this.initCloudAndStatus();
     this.renderVault();
     this.renderRhythmCategories();
     this.renderTrends();
   }
 
-  async syncWithSupabase() {
+  registerPWA() {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js')
+        .then(() => console.log("📱 Service Worker PWA Registrado"))
+        .catch(err => console.warn("PWA SW error:", err));
+    }
+  }
+
+  async initCloudAndStatus() {
+    await this.updateConnectionStatus();
+
     if (this.supabaseService.isConfigured()) {
+      // Seed initial songs into Supabase if missing
+      await this.supabaseService.seedPreloadedSongs(INITIAL_SONGS);
+
+      // Fetch cloud songs
       const cloudSongs = await this.supabaseService.fetchSongs();
       if (cloudSongs && cloudSongs.length > 0) {
-        this.allSongs = [...cloudSongs, ...INITIAL_SONGS];
+        // Merge cloud songs with preloaded avoiding duplicates
+        const map = new Map();
+        [...cloudSongs, ...this.allSongs].forEach(s => {
+          if (!map.has(s.id)) map.set(s.id, s);
+        });
+        this.allSongs = Array.from(map.values());
         this.renderVault();
       }
+    }
+  }
+
+  async updateConnectionStatus() {
+    const status = await this.supabaseService.checkConnection();
+    if (status.connected) {
+      this.dbStatusPill.className = 'status-pill connected';
+      this.dbStatusText.textContent = status.message;
+    } else {
+      this.dbStatusPill.className = 'status-pill disconnected';
+      this.dbStatusText.textContent = status.message;
     }
   }
 
@@ -59,6 +92,10 @@ class App {
     this.views = document.querySelectorAll('.view-section');
     this.themeToggleBtn = document.getElementById('theme-toggle-btn');
     this.themeIcon = document.getElementById('theme-icon');
+
+    // Status Pill
+    this.dbStatusPill = document.getElementById('db-status-pill');
+    this.dbStatusText = document.getElementById('db-status-text');
 
     // Song View DOM
     this.lyricSheet = document.getElementById('lyric-sheet-body');
@@ -75,6 +112,11 @@ class App {
     this.transposeDownBtn = document.getElementById('transpose-down-btn');
     this.transposeResetBtn = document.getElementById('transpose-reset-btn');
     this.accidentalToggleBtn = document.getElementById('accidental-toggle-btn');
+
+    // Font Size Controls
+    this.fontSizeDecBtn = document.getElementById('font-size-dec-btn');
+    this.fontSizeIncBtn = document.getElementById('font-size-inc-btn');
+    this.fontSizeValueDisplay = document.getElementById('font-size-value-display');
 
     // Metronome DOM
     this.metronomeStartBtn = document.getElementById('metronome-start-btn');
@@ -96,13 +138,34 @@ class App {
     this.chordPosPrevBtn = document.getElementById('chord-pos-prev-btn');
     this.chordPosNextBtn = document.getElementById('chord-pos-next-btn');
 
-    // Import Modal DOM
+    // Import / Create Modal DOM
     this.importModalOverlay = document.getElementById('import-modal-overlay');
     this.openImportModalBtn = document.getElementById('open-import-modal-btn');
     this.importModalClose = document.getElementById('import-modal-close');
     this.importCancelBtn = document.getElementById('import-cancel-btn');
     this.importSaveBtn = document.getElementById('import-save-btn');
+    this.importAutoDetectBtn = document.getElementById('import-auto-detect-btn');
+    this.importTitleInput = document.getElementById('import-title-input');
+    this.importArtistInput = document.getElementById('import-artist-input');
+    this.importKeyInput = document.getElementById('import-key-input');
+    this.importRhythmInput = document.getElementById('import-rhythm-input');
+    this.importGenreInput = document.getElementById('import-genre-input');
+    this.importBpmInput = document.getElementById('import-bpm-input');
     this.importRawTextArea = document.getElementById('import-raw-text-area');
+
+    // Edit Modal DOM
+    this.editModalOverlay = document.getElementById('edit-modal-overlay');
+    this.songEditBtn = document.getElementById('song-edit-btn');
+    this.editModalClose = document.getElementById('edit-modal-close');
+    this.editCancelBtn = document.getElementById('edit-cancel-btn');
+    this.editSaveBtn = document.getElementById('edit-save-btn');
+    this.editTitleInput = document.getElementById('edit-title-input');
+    this.editArtistInput = document.getElementById('edit-artist-input');
+    this.editKeyInput = document.getElementById('edit-key-input');
+    this.editRhythmInput = document.getElementById('edit-rhythm-input');
+    this.editGenreInput = document.getElementById('edit-genre-input');
+    this.editBpmInput = document.getElementById('edit-bpm-input');
+    this.editRawTextArea = document.getElementById('edit-raw-text-area');
 
     // Supabase Modal DOM
     this.supabaseModalOverlay = document.getElementById('supabase-modal-overlay');
@@ -157,6 +220,10 @@ class App {
       this.renderActiveSongSheet();
     });
 
+    // Font Size Handlers (A- and A+)
+    this.fontSizeDecBtn.addEventListener('click', () => this.changeFontSize(-10));
+    this.fontSizeIncBtn.addEventListener('click', () => this.changeFontSize(10));
+
     // Metronome Handlers
     this.metronomeStartBtn.addEventListener('click', () => {
       const isPlaying = this.metronome.toggle();
@@ -202,11 +269,29 @@ class App {
       }
     });
 
-    // Import Modal Handlers
+    // Import / Create Modal Handlers
     this.openImportModalBtn.addEventListener('click', () => this.openImportModal());
     this.importModalClose.addEventListener('click', () => this.closeImportModal());
     this.importCancelBtn.addEventListener('click', () => this.closeImportModal());
     this.importSaveBtn.addEventListener('click', () => this.handleImportSong());
+
+    this.importAutoDetectBtn.addEventListener('click', () => {
+      const text = this.importRawTextArea.value.trim();
+      if (text) {
+        const enhanced = aiAutoEnhanceSong(text);
+        this.importTitleInput.value = enhanced.title;
+        this.importArtistInput.value = enhanced.artist;
+        this.importKeyInput.value = enhanced.key;
+        this.importRhythmInput.value = enhanced.rhythm;
+        this.importGenreInput.value = enhanced.genre;
+      }
+    });
+
+    // Edit Modal Handlers
+    this.songEditBtn.addEventListener('click', () => this.openEditModal());
+    this.editModalClose.addEventListener('click', () => this.closeEditModal());
+    this.editCancelBtn.addEventListener('click', () => this.closeEditModal());
+    this.editSaveBtn.addEventListener('click', () => this.handleSaveEditedSong());
 
     // Supabase Modal Handlers
     this.openSupabaseModalBtn.addEventListener('click', () => {
@@ -227,7 +312,7 @@ class App {
         if (success) {
           this.supabaseStatusMsg.style.color = '#10b981';
           this.supabaseStatusMsg.textContent = '✅ Conectado a Supabase correctamente.';
-          await this.syncWithSupabase();
+          await this.initCloudAndStatus();
           setTimeout(() => this.supabaseModalOverlay.classList.remove('open'), 1200);
         } else {
           this.supabaseStatusMsg.style.color = '#ef4444';
@@ -257,12 +342,29 @@ class App {
 
     this.songBackBtn.addEventListener('click', () => this.switchView('view-vault'));
     
-    this.songFavToggleBtn.addEventListener('click', () => {
+    // Favorite Toggle Button
+    this.songFavToggleBtn.addEventListener('click', async () => {
       if (this.activeSong) {
         const isFav = this.setlistManager.toggleFavorite(this.activeSong.id);
+        this.activeSong.favorite = isFav;
         this.songFavToggleBtn.textContent = isFav ? '★ Favorito' : '☆ Favorito';
+
+        await this.supabaseService.updateFavoriteStatus(this.activeSong.id, isFav);
+        this.renderVault();
       }
     });
+  }
+
+  // Resizes font size dynamically
+  changeFontSize(delta) {
+    this.fontScale = Math.min(Math.max(this.fontScale + delta, 70), 220);
+    this.fontSizeValueDisplay.textContent = `${this.fontScale}%`;
+    const remValue = (1.05 * (this.fontScale / 100)).toFixed(2);
+    
+    document.documentElement.style.setProperty('--lyric-font-size', `${remValue}rem`);
+    if (this.lyricSheet) {
+      this.lyricSheet.style.fontSize = `${remValue}rem`;
+    }
   }
 
   switchView(viewId) {
@@ -292,7 +394,7 @@ class App {
   createSongCardElement(song) {
     const card = document.createElement('div');
     card.className = 'song-card';
-    const isFav = this.setlistManager.isFavorite(song.id);
+    const isFav = this.setlistManager.isFavorite(song.id) || !!song.favorite;
 
     card.innerHTML = `
       <div>
@@ -310,11 +412,14 @@ class App {
       </div>
     `;
 
-    card.addEventListener('click', (e) => {
+    card.addEventListener('click', async (e) => {
       if (e.target.classList.contains('fav-btn')) {
         e.stopPropagation();
         const updatedFav = this.setlistManager.toggleFavorite(song.id);
+        song.favorite = updatedFav;
         e.target.classList.toggle('active', updatedFav);
+
+        await this.supabaseService.updateFavoriteStatus(song.id, updatedFav);
       } else {
         this.openSong(song);
       }
@@ -330,12 +435,12 @@ class App {
 
     this.viewSongTitle.textContent = song.title;
     this.viewSongArtist.textContent = song.artist;
-    this.viewSongKey.textContent = `Tono Original: ${song.key}`;
+    this.viewSongKey.textContent = `Tono: ${song.key}`;
     this.viewSongRhythm.textContent = `Ritmo: ${song.rhythm}`;
     this.viewSongCapo.textContent = song.capo || "Sin capo";
     this.viewSongGenre.textContent = song.genre || "General";
 
-    const isFav = this.setlistManager.isFavorite(song.id);
+    const isFav = this.setlistManager.isFavorite(song.id) || !!song.favorite;
     this.songFavToggleBtn.textContent = isFav ? '★ Favorito' : '☆ Favorito';
 
     const songBpm = song.bpm || 120;
@@ -361,7 +466,7 @@ class App {
     if (!this.activeSong) return;
 
     const parsed = parseSongText(this.activeSong.rawText);
-    const transposedRootKey = transposeChord(parsed.key, this.currentSemitones, this.preferFlat);
+    const transposedRootKey = transposeChord(parsed.key || this.activeSong.key, this.currentSemitones, this.preferFlat);
     this.activeKeyDisplay.textContent = transposedRootKey;
 
     this.lyricSheet.innerHTML = '';
@@ -498,12 +603,18 @@ class App {
     }
   }
 
+  // Import / Create Modal
   openImportModal() {
     this.importModalOverlay.classList.add('open');
   }
 
   closeImportModal() {
     this.importModalOverlay.classList.remove('open');
+    this.importTitleInput.value = '';
+    this.importArtistInput.value = '';
+    this.importKeyInput.value = '';
+    this.importRhythmInput.value = '';
+    this.importGenreInput.value = '';
     this.importRawTextArea.value = '';
   }
 
@@ -511,26 +622,79 @@ class App {
     const rawText = this.importRawTextArea.value.trim();
     if (!rawText) return;
 
-    const enhanced = aiAutoEnhanceSong(rawText);
+    let title = this.importTitleInput.value.trim();
+    let artist = this.importArtistInput.value.trim();
+    let key = this.importKeyInput.value.trim();
+    let rhythm = this.importRhythmInput.value.trim();
+    let genre = this.importGenreInput.value.trim();
+    let bpm = parseInt(this.importBpmInput.value, 10) || 120;
+
+    if (!title || !artist || !key) {
+      const enhanced = aiAutoEnhanceSong(rawText);
+      if (!title) title = enhanced.title;
+      if (!artist) artist = enhanced.artist;
+      if (!key) key = enhanced.key;
+      if (!rhythm) rhythm = enhanced.rhythm;
+      if (!genre) genre = enhanced.genre;
+    }
+
     const newSong = {
       id: "custom-" + Date.now(),
-      title: enhanced.title,
-      artist: enhanced.artist,
-      genre: enhanced.genre,
-      rhythm: enhanced.rhythm,
-      key: enhanced.key,
-      capo: enhanced.capo,
-      bpm: 120,
-      rawText: rawText
+      title,
+      artist,
+      genre: genre || "Pop",
+      rhythm: rhythm || "4/4",
+      key: key || "C",
+      capo: "Sin capo",
+      bpm,
+      rawText
     };
 
     this.setlistManager.saveCustomSong(newSong);
     await this.supabaseService.saveSong(newSong);
-    
+
     this.allSongs.unshift(newSong);
     this.renderVault();
     this.closeImportModal();
     this.openSong(newSong);
+  }
+
+  // Full Song Edit Modal
+  openEditModal() {
+    if (!this.activeSong) return;
+
+    this.editTitleInput.value = this.activeSong.title;
+    this.editArtistInput.value = this.activeSong.artist;
+    this.editKeyInput.value = this.activeSong.key;
+    this.editRhythmInput.value = this.activeSong.rhythm;
+    this.editGenreInput.value = this.activeSong.genre;
+    this.editBpmInput.value = this.activeSong.bpm || 120;
+    this.editRawTextArea.value = this.activeSong.rawText;
+
+    this.editModalOverlay.classList.add('open');
+  }
+
+  closeEditModal() {
+    this.editModalOverlay.classList.remove('open');
+  }
+
+  async handleSaveEditedSong() {
+    if (!this.activeSong) return;
+
+    this.activeSong.title = this.editTitleInput.value.trim() || this.activeSong.title;
+    this.activeSong.artist = this.editArtistInput.value.trim() || this.activeSong.artist;
+    this.activeSong.key = this.editKeyInput.value.trim() || this.activeSong.key;
+    this.activeSong.rhythm = this.editRhythmInput.value.trim() || this.activeSong.rhythm;
+    this.activeSong.genre = this.editGenreInput.value.trim() || this.activeSong.genre;
+    this.activeSong.bpm = parseInt(this.editBpmInput.value, 10) || 120;
+    this.activeSong.rawText = this.editRawTextArea.value.trim();
+
+    this.setlistManager.saveCustomSong(this.activeSong);
+    await this.supabaseService.saveSong(this.activeSong);
+
+    this.closeEditModal();
+    this.openSong(this.activeSong);
+    this.renderVault();
   }
 
   handleSearch() {
@@ -574,7 +738,7 @@ class App {
 
   renderFavoritesSublist() {
     const container = document.getElementById('sub-list-content');
-    const favSongs = this.allSongs.filter(s => this.setlistManager.isFavorite(s.id));
+    const favSongs = this.allSongs.filter(s => this.setlistManager.isFavorite(s.id) || !!s.favorite);
     
     container.innerHTML = '<div class="song-grid"></div>';
     const grid = container.querySelector('.song-grid');

@@ -281,43 +281,43 @@
     </div>
   </div>
 
-  <!-- MODAL 2: CREAR / IMPORTAR CANCIÓN (ENHANCED) -->
+  <!-- MODAL 2: CREAR / IMPORTAR CANCIÓN (ENHANCED FORM GRID) -->
   <div class="modal-overlay" id="import-modal-overlay">
-    <div class="modal-card" style="max-width: 650px;">
+    <div class="modal-card">
       <div class="modal-header">
         <h3 class="modal-title">➕ Crear / Importar Canción</h3>
         <button class="close-btn" id="import-modal-close">✕</button>
       </div>
 
       <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
-        Completa los campos o pega la canción de CifraClub/LaCuerda y presiona <strong>✨ Autodetectar con IA</strong> para llenar todo en un clic.
+        Completa los campos o pega la canción de CifraClub/LaCuerda y presiona <strong>✨ Autodetectar con IA</strong>.
       </p>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
-        <div class="form-group" style="margin-bottom: 0;">
-          <label class="form-label">Título de la canción:</label>
-          <input type="text" id="import-title-input" class="form-input" placeholder="ej. Muchacha (Ojos de papel)" />
+      <div class="form-grid-2col">
+        <div class="form-group">
+          <label class="form-label">Título:</label>
+          <input type="text" id="import-title-input" class="form-input" placeholder="ej. Muchacha" />
         </div>
-        <div class="form-group" style="margin-bottom: 0;">
-          <label class="form-label">Artista / Grupo:</label>
-          <input type="text" id="import-artist-input" class="form-input" placeholder="ej. Almendra / Spinetta" />
+        <div class="form-group">
+          <label class="form-label">Artista:</label>
+          <input type="text" id="import-artist-input" class="form-input" placeholder="ej. Spinetta" />
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem;">
-        <div class="form-group" style="margin-bottom: 0;">
+      <div class="form-grid-2col">
+        <div class="form-group">
           <label class="form-label">Tono:</label>
           <input type="text" id="import-key-input" class="form-input" placeholder="ej. G" />
         </div>
-        <div class="form-group" style="margin-bottom: 0;">
+        <div class="form-group">
           <label class="form-label">Ritmo:</label>
           <input type="text" id="import-rhythm-input" class="form-input" placeholder="ej. 4/4" />
         </div>
-        <div class="form-group" style="margin-bottom: 0;">
+        <div class="form-group">
           <label class="form-label">Género:</label>
           <input type="text" id="import-genre-input" class="form-input" placeholder="ej. Rock" />
         </div>
-        <div class="form-group" style="margin-bottom: 0;">
+        <div class="form-group">
           <label class="form-label">BPM:</label>
           <input type="number" id="import-bpm-input" class="form-input" placeholder="120" value="120" />
         </div>
@@ -333,44 +333,44 @@
 
       <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
         <button class="btn btn-secondary" id="import-cancel-btn">Cancelar</button>
-        <button class="btn btn-primary" id="import-save-btn">💾 Guardar Canción en el Baúl</button>
+        <button class="btn btn-primary" id="import-save-btn">💾 Guardar Canción</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL 3: EDITAR CANCIÓN (NEW) -->
+  <!-- MODAL 3: EDITAR CANCIÓN -->
   <div class="modal-overlay" id="edit-modal-overlay">
-    <div class="modal-card" style="max-width: 650px;">
+    <div class="modal-card">
       <div class="modal-header">
         <h3 class="modal-title">✏️ Editar Canción</h3>
         <button class="close-btn" id="edit-modal-close">✕</button>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
-        <div class="form-group" style="margin-bottom: 0;">
+      <div class="form-grid-2col">
+        <div class="form-group">
           <label class="form-label">Título:</label>
           <input type="text" id="edit-title-input" class="form-input" />
         </div>
-        <div class="form-group" style="margin-bottom: 0;">
+        <div class="form-group">
           <label class="form-label">Artista:</label>
           <input type="text" id="edit-artist-input" class="form-input" />
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem;">
-        <div class="form-group" style="margin-bottom: 0;">
+      <div class="form-grid-2col">
+        <div class="form-group">
           <label class="form-label">Tono:</label>
           <input type="text" id="edit-key-input" class="form-input" />
         </div>
-        <div class="form-group" style="margin-bottom: 0;">
+        <div class="form-group">
           <label class="form-label">Ritmo:</label>
           <input type="text" id="edit-rhythm-input" class="form-input" />
         </div>
-        <div class="form-group" style="margin-bottom: 0;">
+        <div class="form-group">
           <label class="form-label">Género:</label>
           <input type="text" id="edit-genre-input" class="form-input" />
         </div>
-        <div class="form-group" style="margin-bottom: 0;">
+        <div class="form-group">
           <label class="form-label">BPM:</label>
           <input type="number" id="edit-bpm-input" class="form-input" />
         </div>

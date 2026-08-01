@@ -1,5 +1,5 @@
 /**
- * GoodChord - Supabase Integration Module
+ * GoodChord - Supabase Integration Module (v2.3 Robust Diagnostics)
  * Pre-configured with default credentials for automatic zero-config cloud sync.
  */
 
@@ -28,7 +28,7 @@ export class SupabaseService {
       localStorage.setItem(STORAGE_SUPABASE_URL, this.url);
       localStorage.setItem(STORAGE_SUPABASE_KEY, this.key);
       this.client = createClient(this.url, this.key);
-      console.log("⚡ Conexión automática establecida con Supabase Cloud DB");
+      console.log("⚡ Conexión inicializada con Supabase Cloud DB");
       return true;
     } catch (e) {
       console.error("Error al inicializar Supabase:", e);
@@ -40,14 +40,26 @@ export class SupabaseService {
     return !!this.client;
   }
 
-  // Check live connection to Supabase DB
+  // Check live connection status to Supabase Cloud
   async checkConnection() {
-    if (!this.client) return false;
+    if (!this.client) return { connected: false, message: "Sin cliente" };
     try {
       const { data, error } = await this.client.from('songs').select('id').limit(1);
-      return !error;
+      
+      if (!error) {
+        return { connected: true, message: "🟢 Supabase Conectado" };
+      }
+      
+      // If table doesn't exist yet (Postgres error 42P01)
+      if (error.code === '42P01' || error.message.includes('does not exist')) {
+        return { connected: true, needsSql: true, message: "⚠️ Conectado (Falta ejecutar SQL)" };
+      }
+
+      console.warn("Respuesta de diagnóstico Supabase:", error);
+      return { connected: false, message: "🔴 Error de conexión" };
     } catch (e) {
-      return false;
+      console.error("Excepción de diagnóstico Supabase:", e);
+      return { connected: false, message: "🔴 Offline" };
     }
   }
 
