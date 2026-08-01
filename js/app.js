@@ -1,5 +1,5 @@
 /**
- * GoodChord - Main Application Controller (v3.0 Perfect Key Sync, Mobile-First PWA & Install)
+ * GoodChord - Main Application Controller (v3.1 Removed Tendencias)
  * Orchestrates views, accurate transposition, chord diagrams, metronome, setlists, search,
  * Supabase Cloud Sync, Full Song Editor, PWA Native Installation, and Mobile Responsive Bottom Nav.
  */
@@ -9,7 +9,7 @@ import { parseSongText, aiAutoEnhanceSong } from './parser.js';
 import { Metronome } from './metronome.js';
 import { INITIAL_SONGS } from './songsData.js';
 import { SetlistManager } from './setlistManager.js';
-import { TRENDING_SPANISH_SONGS, RHYTHM_CATEGORIES } from './trendsData.js';
+import { RHYTHM_CATEGORIES } from './trendsData.js';
 import { exportSongToPDF } from './pdfExporter.js';
 import { SupabaseService } from './supabaseClient.js';
 
@@ -44,7 +44,6 @@ class App {
     this.initCloudAndStatus();
     this.renderVault();
     this.renderRhythmCategories();
-    this.renderTrends();
   }
 
   generateNextSongId() {
@@ -218,7 +217,6 @@ class App {
   }
 
   bindEvents() {
-    // Navigation Tabs Switcher
     this.navBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         const viewId = btn.dataset.view;
@@ -230,7 +228,6 @@ class App {
       this.switchView('view-vault');
     });
 
-    // PWA Install Button Handler
     this.pwaInstallBtn.addEventListener('click', () => {
       if (this.deferredPrompt) {
         this.deferredPrompt.prompt();
@@ -257,7 +254,6 @@ class App {
       this.pwaIosOkBtn.addEventListener('click', () => this.pwaIosModal.classList.remove('open'));
     }
 
-    // Theme Switcher
     this.themeToggleBtn.addEventListener('click', () => {
       const current = document.documentElement.getAttribute('data-theme');
       const next = current === 'dark' ? 'light' : 'dark';
@@ -265,7 +261,6 @@ class App {
       this.themeIcon.textContent = next === 'dark' ? '🌙' : '☀️';
     });
 
-    // Transposition Handlers
     this.transposeUpBtn.addEventListener('click', () => this.changeTransposition(1));
     this.transposeDownBtn.addEventListener('click', () => this.changeTransposition(-1));
     this.transposeResetBtn.addEventListener('click', () => this.resetTransposition());
@@ -274,11 +269,9 @@ class App {
       this.renderActiveSongSheet();
     });
 
-    // Font Size Handlers (A- and A+)
     this.fontSizeDecBtn.addEventListener('click', () => this.changeFontSize(-10));
     this.fontSizeIncBtn.addEventListener('click', () => this.changeFontSize(10));
 
-    // Metronome Handlers
     this.metronomeStartBtn.addEventListener('click', () => {
       const isPlaying = this.metronome.toggle();
       this.metronomeStartBtn.textContent = isPlaying ? '⏸' : '▶';
@@ -300,10 +293,8 @@ class App {
       this.updateBeatIndicators(beatIdx, totalBeats);
     };
 
-    // Auto scroll handler
     this.autoscrollToggleBtn.addEventListener('click', () => this.toggleAutoScroll());
 
-    // Chord Modal Handlers
     this.chordModalClose.addEventListener('click', () => this.closeChordModal());
     this.chordModalOverlay.addEventListener('click', (e) => {
       if (e.target === this.chordModalOverlay) this.closeChordModal();
@@ -323,7 +314,6 @@ class App {
       }
     });
 
-    // Import / Create Modal Handlers
     this.openImportModalBtn.addEventListener('click', () => this.openImportModal());
     this.importModalClose.addEventListener('click', () => this.closeImportModal());
     this.importCancelBtn.addEventListener('click', () => this.closeImportModal());
@@ -341,7 +331,6 @@ class App {
       }
     });
 
-    // Edit & Delete Modal Handlers
     this.songEditBtn.addEventListener('click', () => this.openEditModal());
     this.editModalClose.addEventListener('click', () => this.closeEditModal());
     this.editCancelBtn.addEventListener('click', () => this.closeEditModal());
@@ -358,7 +347,6 @@ class App {
       }
     });
 
-    // Supabase Modal Handlers
     this.openSupabaseModalBtn.addEventListener('click', () => {
       this.supabaseUrlInput.value = this.supabaseService.url;
       this.supabaseKeyInput.value = this.supabaseService.key;
@@ -386,19 +374,16 @@ class App {
       }
     });
 
-    // Search and Filter Listeners
     this.searchQueryInput.addEventListener('input', () => this.handleSearch());
     this.filterGenreSelect.addEventListener('change', () => this.handleSearch());
     this.filterRhythmSelect.addEventListener('change', () => this.handleSearch());
     this.filterKeySelect.addEventListener('change', () => this.handleSearch());
 
-    // Sub-lists switcher
     document.getElementById('tab-sub-favorites').addEventListener('click', (e) => this.switchSubList('favorites', e.target));
     document.getElementById('tab-sub-recents').addEventListener('click', (e) => this.switchSubList('recents', e.target));
     document.getElementById('tab-sub-setlists').addEventListener('click', (e) => this.switchSubList('setlists', e.target));
     document.getElementById('create-setlist-btn').addEventListener('click', () => this.handleCreateSetlist());
 
-    // PDF Export & Back Button
     this.songPdfExportBtn.addEventListener('click', () => {
       if (this.activeSong) {
         exportSongToPDF(this.activeSong, this.currentSemitones);
@@ -407,7 +392,6 @@ class App {
 
     this.songBackBtn.addEventListener('click', () => this.switchView('view-vault'));
     
-    // Favorite Toggle Button
     this.songFavToggleBtn.addEventListener('click', async () => {
       if (this.activeSong) {
         const isFav = this.setlistManager.toggleFavorite(this.activeSong.id);
@@ -540,19 +524,16 @@ class App {
     this.renderActiveSongSheet();
   }
 
-  // Render song sheet & update Active Key Display correlatively with chords
   renderActiveSongSheet() {
     if (!this.activeSong) return;
 
     const parsed = parseSongText(this.activeSong.rawText);
 
-    // Determine the base root key: either from song metadata or first chord
     let baseRootKey = this.activeSong.key;
     if (!baseRootKey || baseRootKey === 'General') {
       baseRootKey = parsed.key || 'C';
     }
 
-    // Transpose the base root key correlatively
     const transposedRootKey = transposeChord(baseRootKey, this.currentSemitones, this.preferFlat);
     this.activeKeyDisplay.textContent = transposedRootKey;
     this.viewSongKey.textContent = `Tono: ${transposedRootKey}`;
@@ -924,56 +905,6 @@ class App {
       `;
 
       container.appendChild(card);
-    });
-  }
-
-  renderTrends() {
-    const grid = document.getElementById('trends-grid');
-    grid.innerHTML = '';
-
-    TRENDING_SPANISH_SONGS.forEach(trend => {
-      const card = document.createElement('div');
-      card.className = 'song-card';
-
-      card.innerHTML = `
-        <div>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <span class="badge badge-key">🔥 #${trend.trendingRank} En Tendencia</span>
-            <span class="badge">${trend.genre}</span>
-          </div>
-          <div class="song-card-title">${trend.title}</div>
-          <div class="song-card-artist">${trend.artist}</div>
-          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem;">Tono: ${trend.key} | ${trend.rhythm}</div>
-        </div>
-        <div class="song-card-footer">
-          <button class="btn btn-primary import-trend-btn" style="width: 100%;">📥 Importar al Baúl</button>
-        </div>
-      `;
-
-      card.querySelector('.import-trend-btn').addEventListener('click', async (e) => {
-        e.stopPropagation();
-
-        const nextId = this.generateNextSongId();
-        const newSong = {
-          id: nextId,
-          title: trend.title,
-          artist: trend.artist,
-          genre: trend.genre,
-          rhythm: trend.rhythm,
-          key: trend.key,
-          bpm: trend.bpm,
-          rawText: trend.rawText
-        };
-
-        this.setlistManager.saveCustomSong(newSong);
-        await this.supabaseService.saveSong(newSong);
-
-        this.allSongs.unshift(newSong);
-        this.renderVault();
-        this.openSong(newSong);
-      });
-
-      grid.appendChild(card);
     });
   }
 }
