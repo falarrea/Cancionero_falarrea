@@ -1,31 +1,32 @@
 /* ==========================================================================
-   GoodChord - Pixel-Perfect Mobile & Desktop Stylesheet (v3.2 Mobile Polish)
-   Glassmorphism, Dark/Light Themes, Mobile Bottom Nav, Compact Mobile Toolbar
+   GoodChord - Ultra-Modern Neutral Gray Design System (v4.0 Slate/Zinc)
+   Minimalist Monochrome Aesthetics, Sleek Dark/Light Gray Palettes
    ========================================================================== */
 
 :root {
-  /* Dark Theme (Default) */
-  --bg-primary: #0b0f19;
-  --bg-secondary: #131b2e;
-  --bg-card: #1e293b;
-  --bg-card-hover: #334155;
-  --border-color: rgba(255, 255, 255, 0.1);
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  /* Dark Theme (Neutral Charcoal & Zinc Grays) */
+  --bg-primary: #09090b;
+  --bg-secondary: #121215;
+  --bg-card: #18181b;
+  --bg-card-hover: #27272a;
+  --border-color: rgba(255, 255, 255, 0.09);
   
-  --accent-color: #6366f1;
-  --accent-hover: #4f46e5;
-  --accent-light: rgba(99, 102, 241, 0.15);
-  --accent-glow: rgba(99, 102, 241, 0.4);
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  
+  --accent-color: #f4f4f5;
+  --accent-hover: #ffffff;
+  --accent-light: rgba(255, 255, 255, 0.08);
+  --accent-glow: rgba(255, 255, 255, 0.12);
 
   --chord-color: #38bdf8;
-  --chord-bg: rgba(56, 189, 248, 0.15);
-  --chord-hover: rgba(56, 189, 248, 0.28);
+  --chord-bg: rgba(56, 189, 248, 0.12);
+  --chord-hover: rgba(56, 189, 248, 0.25);
   
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 20px 30px -10px rgba(0, 0, 0, 0.6);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 20px -4px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 16px 28px -8px rgba(0, 0, 0, 0.7);
 
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -39,27 +40,29 @@
 }
 
 [data-theme="light"] {
-  --bg-primary: #f8fafc;
+  /* Light Theme (Neutral Silver & Off-White Grays) */
+  --bg-primary: #f4f4f5;
   --bg-secondary: #ffffff;
   --bg-card: #ffffff;
-  --bg-card-hover: #f1f5f9;
+  --bg-card-hover: #e4e4e7;
   --border-color: rgba(0, 0, 0, 0.08);
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  
+  --text-primary: #09090b;
+  --text-secondary: #52525b;
+  --text-muted: #71717a;
 
-  --accent-color: #4f46e5;
-  --accent-hover: #4338ca;
-  --accent-light: rgba(79, 70, 229, 0.1);
-  --accent-glow: rgba(79, 70, 229, 0.25);
+  --accent-color: #18181b;
+  --accent-hover: #09090b;
+  --accent-light: rgba(0, 0, 0, 0.05);
+  --accent-glow: rgba(0, 0, 0, 0.1);
 
   --chord-color: #0284c7;
-  --chord-bg: rgba(2, 132, 199, 0.1);
-  --chord-hover: rgba(2, 132, 199, 0.2);
+  --chord-bg: rgba(2, 132, 199, 0.08);
+  --chord-hover: rgba(2, 132, 199, 0.18);
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 20px 30px -10px rgba(0, 0, 0, 0.12);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 6px 16px -4px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 24px -6px rgba(0, 0, 0, 0.12);
 }
 
 /* Reset & Base Styles */
@@ -133,7 +136,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  padding: 0.5rem 1rem;
+  padding: 0.55rem 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -152,17 +155,15 @@ body {
 .guitar-logo-svg {
   width: 30px;
   height: 30px;
-  color: var(--accent-color);
-  filter: drop-shadow(0 0 6px var(--accent-glow));
+  color: var(--text-primary);
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.2));
 }
 
 .brand-title {
   font-size: 1.2rem;
   font-weight: 800;
   letter-spacing: -0.5px;
-  background: linear-gradient(135deg, var(--text-primary) 30%, var(--accent-color));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text-primary);
 }
 
 .brand-tagline {
@@ -175,7 +176,7 @@ body {
 .nav-tabs {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.25rem;
   background: var(--bg-primary);
   padding: 0.2rem;
   border-radius: var(--radius-md);
@@ -199,13 +200,14 @@ body {
 
 .nav-btn:hover {
   color: var(--text-primary);
-  background: var(--bg-card);
+  background: var(--bg-card-hover);
 }
 
 .nav-btn.active {
-  background: var(--accent-color);
-  color: #ffffff;
-  box-shadow: 0 3px 10px var(--accent-glow);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .header-actions {
@@ -232,12 +234,12 @@ body {
 
 .btn-primary {
   background: var(--accent-color);
-  color: #ffffff;
+  color: var(--bg-primary);
 }
 
 .btn-primary:hover {
   background: var(--accent-hover);
-  box-shadow: 0 4px 12px var(--accent-glow);
+  box-shadow: 0 2px 8px var(--accent-glow);
 }
 
 .btn-secondary {
@@ -251,8 +253,8 @@ body {
 }
 
 .btn-danger {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.35);
   color: #f87171;
 }
 
@@ -312,7 +314,7 @@ body {
 }
 
 .song-card:hover {
-  border-color: var(--accent-color);
+  border-color: var(--text-muted);
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
@@ -350,8 +352,8 @@ body {
 
 .badge-key {
   background: var(--accent-light);
-  color: var(--accent-color);
-  border-color: rgba(99, 102, 241, 0.3);
+  color: var(--text-primary);
+  border-color: var(--border-color);
 }
 
 .song-card-footer {
@@ -418,7 +420,7 @@ body {
   margin-top: 0.4rem;
 }
 
-/* Song Control Toolbar (Pixel-Perfect Mobile Grid Layout) */
+/* Song Control Toolbar */
 .song-toolbar {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -450,8 +452,9 @@ body {
 }
 
 .key-box {
-  background: var(--accent-color);
-  color: #ffffff;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
   font-weight: 800;
   font-size: 0.88rem;
   padding: 0.15rem 0.5rem;
@@ -487,9 +490,9 @@ body {
 }
 
 .beat-dot.active {
-  background: var(--accent-color);
+  background: var(--text-primary);
   opacity: 1;
-  box-shadow: 0 0 6px var(--accent-color);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
   transform: scale(1.2);
 }
 
@@ -497,10 +500,10 @@ body {
   flex: 1;
   min-width: 50px;
   max-width: 100px;
-  accent-color: var(--accent-color);
+  accent-color: var(--text-primary);
 }
 
-/* Dynamic Interactive Lyric Sheet Format (Clean Word Alignment) */
+/* Dynamic Interactive Lyric Sheet Format */
 .lyric-sheet {
   font-family: var(--font-sans);
   font-size: var(--lyric-font-size, 1rem) !important;
@@ -512,7 +515,7 @@ body {
 
 .section-header {
   font-weight: 800;
-  color: var(--accent-color);
+  color: var(--text-secondary);
   font-size: calc(var(--lyric-font-size, 1rem) * 0.85) !important;
   letter-spacing: 0.5px;
   text-transform: uppercase;
@@ -568,7 +571,7 @@ body {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
@@ -745,14 +748,14 @@ body {
   min-width: 110px;
 }
 
-/* Mobile Sticky Bottom Navigation Bar (4 Items Only) */
+/* Mobile Sticky Bottom Navigation Bar */
 .mobile-bottom-nav {
   display: none;
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 56px;
+  height: 54px;
   background: var(--bg-secondary);
   border-top: 1px solid var(--border-color);
   backdrop-filter: blur(12px);
@@ -780,7 +783,7 @@ body {
 }
 
 .mobile-nav-btn.active {
-  color: var(--accent-color);
+  color: var(--text-primary);
 }
 
 /* Mobile Responsive Breakpoints */

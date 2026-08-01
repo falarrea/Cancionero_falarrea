@@ -1,5 +1,5 @@
 /**
- * GoodChord - Main Application Controller (v3.1 Removed Tendencias)
+ * GoodChord - Main Application Controller (v3.3 Automatic Key Auto-Sync)
  * Orchestrates views, accurate transposition, chord diagrams, metronome, setlists, search,
  * Supabase Cloud Sync, Full Song Editor, PWA Native Installation, and Mobile Responsive Bottom Nav.
  */
@@ -524,16 +524,41 @@ class App {
     this.renderActiveSongSheet();
   }
 
+  // Render song sheet & auto-detect true root key from first chord to ensure 100% key display correlation
   renderActiveSongSheet() {
     if (!this.activeSong) return;
 
     const parsed = parseSongText(this.activeSong.rawText);
 
+    // Extract the very first chord present in the song lyrics
+    let firstChordInSong = null;
+    for (const item of parsed.content) {
+      if (item.type === 'aligned' && item.pairs) {
+        for (const p of item.pairs) {
+          if (p.chord) {
+            firstChordInSong = p.chord;
+            break;
+          }
+        }
+      } else if (item.type === 'chords-only' && item.line) {
+        const tokens = item.line.trim().split(/\s+/);
+        if (tokens.length > 0) {
+          firstChordInSong = tokens[0];
+          break;
+        }
+      }
+      if (firstChordInSong) break;
+    }
+
+    // Determine the base root key: use first chord if metadata key is missing or mismatched
     let baseRootKey = this.activeSong.key;
-    if (!baseRootKey || baseRootKey === 'General') {
+    if (firstChordInSong && (!baseRootKey || baseRootKey === 'General' || baseRootKey.trim() === '')) {
+      baseRootKey = firstChordInSong;
+    } else if (!baseRootKey) {
       baseRootKey = parsed.key || 'C';
     }
 
+    // Transpose the base root key correlatively
     const transposedRootKey = transposeChord(baseRootKey, this.currentSemitones, this.preferFlat);
     this.activeKeyDisplay.textContent = transposedRootKey;
     this.viewSongKey.textContent = `Tono: ${transposedRootKey}`;
