@@ -2,7 +2,7 @@
 <html lang="es" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>GoodChord - Tu Cancionero e Inteligencia de Acordes</title>
   <meta name="description" content="GoodChord: Cancionero inteligente con letras, acordes complejos, diagramas interactivos, transposición, metrónomo y recomendador por ritmo.">
   
@@ -26,7 +26,6 @@
   <!-- App Header -->
   <header class="app-header">
     <div class="brand-container" id="brand-home-btn">
-      <!-- Minimalist Guitar Logo SVG -->
       <svg class="guitar-logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M48 20 C 35 20, 25 32, 25 45 C 25 54, 31 60, 36 65 C 32 72, 30 80, 40 90 C 52 100, 68 95, 75 82 C 82 68, 75 52, 65 48 C 60 40, 58 20, 48 20 Z" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" />
         <circle cx="52" cy="68" r="9" stroke="currentColor" stroke-width="3.5" fill="none" />
@@ -41,8 +40,8 @@
       </div>
     </div>
 
-    <!-- Navigation Tabs -->
-    <nav class="nav-tabs">
+    <!-- Navigation Tabs (Desktop) -->
+    <nav class="nav-tabs desktop-only">
       <button class="nav-btn active" data-view="view-vault">
         <span>📚</span> Baúl
       </button>
@@ -62,11 +61,15 @@
 
     <!-- Header Actions -->
     <div class="header-actions">
-      <!-- Connection Status Badge -->
       <div id="db-status-pill" class="status-pill disconnected" title="Estado de conexión con Supabase">
         <span class="status-dot"></span>
         <span id="db-status-text">Sin Conectar</span>
       </div>
+
+      <!-- PWA Native Install Button -->
+      <button class="btn btn-primary" id="pwa-install-btn" style="background: linear-gradient(135deg, #10b981, #059669);">
+        <span>📲</span> Instalar App
+      </button>
 
       <button class="btn btn-secondary" id="open-supabase-modal-btn" title="Configurar Conexión Nube Supabase">
         <span>⚡</span> Supabase
@@ -88,7 +91,7 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
         <div>
           <h2>Mi Baúl de Canciones</h2>
-          <p style="color: var(--text-secondary); font-size: 0.9rem;">Todas tus canciones guardadas con letra, acordes e inteligencia de transposición.</p>
+          <p style="color: var(--text-secondary); font-size: 0.88rem;">Todas tus canciones guardadas con letra, acordes e inteligencia de transposición.</p>
         </div>
       </div>
       <div id="vault-song-grid" class="song-grid">
@@ -102,7 +105,7 @@
         <h2>Buscador y Filtros Avanzados</h2>
         <div class="search-input-wrapper">
           <span class="search-icon-pos">🔍</span>
-          <input type="text" id="search-query-input" class="search-input" placeholder="Buscar por título de canción, artista, letra..." />
+          <input type="text" id="search-query-input" class="search-input" placeholder="Buscar por título, artista, letra..." />
         </div>
         <div class="filter-row">
           <select id="filter-genre-select" class="select-filter">
@@ -142,8 +145,8 @@
     <section id="view-lists" class="view-section">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <div>
-          <h2>Listas y Setlists Personalizados</h2>
-          <p style="color: var(--text-secondary); font-size: 0.9rem;">Organiza tus canciones para recitales en vivo, ensayos o listas de reproducción.</p>
+          <h2>Setlists y Listas</h2>
+          <p style="color: var(--text-secondary); font-size: 0.88rem;">Organiza tus canciones para recitales o ensayos.</p>
         </div>
         <button class="btn btn-primary" id="create-setlist-btn">
           <span>➕</span> Nuevo Setlist
@@ -165,7 +168,7 @@
     <section id="view-rhythms" class="view-section">
       <div style="margin-bottom: 1.5rem;">
         <h2>Recomendado por Ritmo (Estilo CifraClub)</h2>
-        <p style="color: var(--text-secondary); font-size: 0.9rem;">Explora canciones agrupadas según la mano derecha, compás y patrón de rasgueo.</p>
+        <p style="color: var(--text-secondary); font-size: 0.88rem;">Explora canciones agrupadas según la mano derecha y patrón de rasgueo.</p>
       </div>
       <div id="rhythm-categories-container">
         <!-- Rhythm cards injected -->
@@ -176,7 +179,7 @@
     <section id="view-trends" class="view-section">
       <div style="margin-bottom: 1.5rem;">
         <h2>Canciones Tendencia en Español</h2>
-        <p style="color: var(--text-secondary); font-size: 0.9rem;">Canciones populares del momento. Importa cualquier éxito a tu baúl personal en 1 click.</p>
+        <p style="color: var(--text-secondary); font-size: 0.88rem;">Canciones populares del momento. Importa cualquier éxito en 1 click.</p>
       </div>
       <div id="trends-grid" class="song-grid">
         <!-- Trending cards injected -->
@@ -197,42 +200,42 @@
               <span class="badge" id="view-song-genre">Rock</span>
             </div>
           </div>
-          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
             <button class="btn btn-secondary" id="song-fav-toggle-btn">⭐ Favorito</button>
             <button class="btn btn-secondary" id="song-edit-btn">✏️ Editar</button>
-            <button class="btn btn-secondary btn-danger" id="song-delete-btn" title="Eliminar Canción">🗑️ Eliminar</button>
-            <button class="btn btn-primary" id="song-pdf-export-btn">📄 Exportar PDF</button>
+            <button class="btn btn-secondary btn-danger" id="song-delete-btn" title="Eliminar Canción">🗑️</button>
+            <button class="btn btn-primary" id="song-pdf-export-btn">📄 PDF</button>
             <button class="btn btn-secondary" id="song-back-btn">⬅ Volver</button>
           </div>
         </div>
 
-        <!-- Song Control Toolbar -->
+        <!-- Song Control Toolbar (Mobile Compact) -->
         <div class="song-toolbar">
           <!-- Transposition Group -->
           <div class="toolbar-group">
-            <span class="toolbar-label">Trasponer:</span>
+            <span class="toolbar-label">Tono:</span>
             <button class="btn btn-secondary" id="transpose-down-btn" title="-1 Semitono">-</button>
             <div class="key-box" id="active-key-display">C</div>
             <button class="btn btn-secondary" id="transpose-up-btn" title="+1 Semitono">+</button>
-            <button class="btn btn-secondary" id="transpose-reset-btn" title="Restablecer Tono Original">Reset</button>
+            <button class="btn btn-secondary" id="transpose-reset-btn" title="Restablecer Tono">Reset</button>
             <button class="btn btn-secondary" id="accidental-toggle-btn" title="Alternar Sostenidos / Bemoles"># / ♭</button>
           </div>
 
           <!-- Font Size Adjustment Group -->
           <div class="toolbar-group">
             <span class="toolbar-label">Letra:</span>
-            <button class="btn btn-secondary" id="font-size-dec-btn" title="Reducir tamaño de letra">A-</button>
-            <span id="font-size-value-display" style="font-weight: 700; font-size: 0.85rem; min-width: 40px; text-align: center;">100%</span>
-            <button class="btn btn-secondary" id="font-size-inc-btn" title="Aumentar tamaño de letra">A+</button>
+            <button class="btn btn-secondary" id="font-size-dec-btn" title="Reducir letra">A-</button>
+            <span id="font-size-value-display" style="font-weight: 700; font-size: 0.82rem; min-width: 36px; text-align: center;">100%</span>
+            <button class="btn btn-secondary" id="font-size-inc-btn" title="Aumentar letra">A+</button>
           </div>
 
           <!-- Embedded Metronome Bar -->
           <div class="metronome-bar">
             <span class="toolbar-label">Metrónomo:</span>
-            <button class="btn btn-primary btn-icon" id="metronome-start-btn" title="Iniciar / Detener Metrónomo">▶</button>
-            <span id="bpm-display-text" style="font-weight: 800; font-family: var(--font-mono); min-width: 60px;">120 BPM</span>
+            <button class="btn btn-primary btn-icon" id="metronome-start-btn" title="Iniciar Metrónomo">▶</button>
+            <span id="bpm-display-text" style="font-weight: 800; font-family: var(--font-mono); min-width: 55px; font-size: 0.88rem;">120 BPM</span>
             <input type="range" id="bpm-range-input" class="bpm-slider" min="30" max="240" value="120" />
-            <button class="btn btn-secondary" id="tap-tempo-btn" title="Toca el ritmo para calcular BPM">Tap</button>
+            <button class="btn btn-secondary" id="tap-tempo-btn" title="Tap Tempo">Tap</button>
             <div class="beat-indicators" id="beat-indicators-container">
               <div class="beat-dot"></div>
               <div class="beat-dot"></div>
@@ -243,9 +246,9 @@
 
           <!-- Auto-Scroll Group -->
           <div class="toolbar-group">
-            <span class="toolbar-label">Auto-Scroll:</span>
+            <span class="toolbar-label">Scroll:</span>
             <button class="btn btn-secondary" id="autoscroll-toggle-btn">▶ Iniciar</button>
-            <input type="range" id="autoscroll-speed-input" min="1" max="10" value="3" style="width: 70px;" />
+            <input type="range" id="autoscroll-speed-input" min="1" max="10" value="3" style="width: 60px;" />
           </div>
         </div>
 
@@ -257,6 +260,30 @@
     </section>
 
   </main>
+
+  <!-- Mobile Bottom Sticky Navigation Bar -->
+  <nav class="mobile-bottom-nav">
+    <button class="mobile-nav-btn active" data-view="view-vault">
+      <span class="mobile-nav-icon">📚</span>
+      <span>Baúl</span>
+    </button>
+    <button class="mobile-nav-btn" data-view="view-search">
+      <span class="mobile-nav-icon">🔍</span>
+      <span>Buscar</span>
+    </button>
+    <button class="mobile-nav-btn" data-view="view-lists">
+      <span class="mobile-nav-icon">📋</span>
+      <span>Setlists</span>
+    </button>
+    <button class="mobile-nav-btn" data-view="view-rhythms">
+      <span class="mobile-nav-icon">💃</span>
+      <span>Ritmos</span>
+    </button>
+    <button class="mobile-nav-btn" data-view="view-trends">
+      <span class="mobile-nav-icon">🔥</span>
+      <span>Tendencias</span>
+    </button>
+  </nav>
 
   <!-- MODAL 1: CHORD DIAGRAM POPOVER MODAL -->
   <div class="modal-overlay" id="chord-modal-overlay">
@@ -392,7 +419,30 @@
     </div>
   </div>
 
-  <!-- MODAL 4: CONFIGURACIÓN SUPABASE CLOUD -->
+  <!-- MODAL 4: INSTALACIÓN EN IOS (PWA SAFARI) -->
+  <div class="modal-overlay" id="pwa-ios-modal">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 class="modal-title">📲 Instalar GoodChord en tu Celular</h3>
+        <button class="close-btn" id="pwa-ios-modal-close">✕</button>
+      </div>
+
+      <div style="font-size: 0.9rem; line-height: 1.6; color: var(--text-primary); margin-bottom: 1.25rem;">
+        <p style="margin-bottom: 0.75rem;">Para instalar GoodChord como una aplicación nativa en tu iPhone o iPad:</p>
+        <ol style="margin-left: 1.2rem;">
+          <li style="margin-bottom: 0.5rem;">Toca el botón <strong>Compartir</strong> <span style="font-size: 1.2rem;">📤</span> en la barra inferior de Safari.</li>
+          <li style="margin-bottom: 0.5rem;">Desplázate hacia abajo y selecciona <strong>"Agregar a inicio"</strong> ➕.</li>
+          <li>¡Listo! GoodChord aparecerá en la pantalla de inicio de tu celular.</li>
+        </ol>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end;">
+        <button class="btn btn-primary" id="pwa-ios-ok-btn">¡Entendido!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 5: CONFIGURACIÓN SUPABASE CLOUD -->
   <div class="modal-overlay" id="supabase-modal-overlay">
     <div class="modal-card" style="max-width: 500px;">
       <div class="modal-header">

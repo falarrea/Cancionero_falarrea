@@ -1,10 +1,10 @@
 /**
- * GoodChord - Main Application Controller (v2.8 Complete Song Deletion)
- * Orchestrates views, transposition, chord diagrams, metronome, setlists, search,
- * Supabase Cloud Sync, Full Song Editor, PWA installation, Sequential IDs, and Delete Operations.
+ * GoodChord - Main Application Controller (v3.0 Perfect Key Sync, Mobile-First PWA & Install)
+ * Orchestrates views, accurate transposition, chord diagrams, metronome, setlists, search,
+ * Supabase Cloud Sync, Full Song Editor, PWA Native Installation, and Mobile Responsive Bottom Nav.
  */
 
-import { transposeChord, getChordPositions, renderChordSVG } from './chordEngine.js';
+import { transposeChord, transposeNote, getChordPositions, renderChordSVG } from './chordEngine.js';
 import { parseSongText, aiAutoEnhanceSong } from './parser.js';
 import { Metronome } from './metronome.js';
 import { INITIAL_SONGS } from './songsData.js';
@@ -24,9 +24,10 @@ class App {
     this.activeSong = null;
     this.currentSemitones = 0;
     this.preferFlat = false;
-
-    // Font size scale (%)
     this.fontScale = 100;
+
+    // PWA Install Event Handler
+    this.deferredPrompt = null;
 
     // Chord Popover Modal State
     this.activeModalChord = null;
@@ -66,19 +67,23 @@ class App {
         .then(() => console.log("📱 Service Worker PWA Registrado"))
         .catch(err => console.warn("PWA SW error:", err));
     }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      this.deferredPrompt = e;
+      if (this.pwaInstallBtn) {
+        this.pwaInstallBtn.style.display = 'inline-flex';
+      }
+    });
   }
 
   async initCloudAndStatus() {
     await this.updateConnectionStatus();
 
     if (this.supabaseService.isConfigured()) {
-      // Seed initial songs into Supabase if missing
       await this.supabaseService.seedPreloadedSongs(INITIAL_SONGS);
-
-      // Fetch cloud songs
       const cloudSongs = await this.supabaseService.fetchSongs();
       if (cloudSongs && cloudSongs.length > 0) {
-        // Merge cloud songs with preloaded avoiding duplicates
         const map = new Map();
         [...cloudSongs, ...this.allSongs].forEach(s => {
           if (!map.has(s.id)) map.set(s.id, s);
@@ -101,11 +106,17 @@ class App {
   }
 
   initDOM() {
-    // Navigation
-    this.navBtns = document.querySelectorAll('.nav-btn[data-view]');
+    // Navigation (Desktop & Mobile)
+    this.navBtns = document.querySelectorAll('.nav-btn[data-view], .mobile-nav-btn[data-view]');
     this.views = document.querySelectorAll('.view-section');
     this.themeToggleBtn = document.getElementById('theme-toggle-btn');
     this.themeIcon = document.getElementById('theme-icon');
+
+    // PWA Install Button & Modals
+    this.pwaInstallBtn = document.getElementById('pwa-install-btn');
+    this.pwaIosModal = document.getElementById('pwa-ios-modal');
+    this.pwaIosModalClose = document.getElementById('pwa-ios-modal-close');
+    this.pwaIosOkBtn = document.getElementById('pwa-ios-ok-btn');
 
     // Status Pill
     this.dbStatusPill = document.getElementById('db-status-pill');
@@ -219,6 +230,33 @@ class App {
       this.switchView('view-vault');
     });
 
+    // PWA Install Button Handler
+    this.pwaInstallBtn.addEventListener('click', () => {
+      if (this.deferredPrompt) {
+        this.deferredPrompt.prompt();
+        this.deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('Usuario aceptó instalar PWA');
+          }
+          this.deferredPrompt = null;
+        });
+      } else {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if (isIOS) {
+          this.pwaIosModal.classList.add('open');
+        } else {
+          alert("📱 Para instalar GoodChord en tu celular:\n\n1. Abrí el menú de tu navegador (3 puntos arriba a la derecha).\n2. Seleccioná 'Instalar aplicación' o 'Agregar a la pantalla principal'.");
+        }
+      }
+    });
+
+    if (this.pwaIosModalClose) {
+      this.pwaIosModalClose.addEventListener('click', () => this.pwaIosModal.classList.remove('open'));
+    }
+    if (this.pwaIosOkBtn) {
+      this.pwaIosOkBtn.addEventListener('click', () => this.pwaIosModal.classList.remove('open'));
+    }
+
     // Theme Switcher
     this.themeToggleBtn.addEventListener('click', () => {
       const current = document.documentElement.getAttribute('data-theme');
@@ -309,7 +347,6 @@ class App {
     this.editCancelBtn.addEventListener('click', () => this.closeEditModal());
     this.editSaveBtn.addEventListener('click', () => this.handleSaveEditedSong());
 
-    // Delete Song Handlers
     this.songDeleteBtn.addEventListener('click', () => {
       if (this.activeSong) this.handleDeleteSong(this.activeSong.id);
     });
@@ -383,7 +420,6 @@ class App {
     });
   }
 
-  // Delete Song Handler
   async handleDeleteSong(songId) {
     const song = this.allSongs.find(s => s.id === songId);
     if (!song) return;
@@ -391,25 +427,18 @@ class App {
     const confirmDelete = confirm(`¿Estás seguro de que deseas eliminar "${song.title}" de tu baúl y de Supabase?`);
     if (!confirmDelete) return;
 
-    // 1. Remove from local state array
     this.allSongs = this.allSongs.filter(s => s.id !== songId);
-
-    // 2. Remove from LocalStorage setlists & custom songs
     this.setlistManager.deleteCustomSong(songId);
-
-    // 3. Remove from Supabase Cloud DB
     await this.supabaseService.deleteSong(songId);
 
-    // 4. Update UI
     this.renderVault();
     this.switchView('view-vault');
   }
 
-  // Resizes font size dynamically
   changeFontSize(delta) {
     this.fontScale = Math.min(Math.max(this.fontScale + delta, 70), 220);
     this.fontSizeValueDisplay.textContent = `${this.fontScale}%`;
-    const remValue = (1.05 * (this.fontScale / 100)).toFixed(2);
+    const remValue = (1.0 * (this.fontScale / 100)).toFixed(2);
     
     document.documentElement.style.setProperty('--lyric-font-size', `${remValue}rem`);
     if (this.lyricSheet) {
@@ -458,9 +487,7 @@ class App {
       </div>
       <div class="song-card-footer">
         <span style="font-size: 0.8rem; color: var(--text-muted);">${song.bpm || 120} BPM</span>
-        <div style="display: flex; gap: 0.5rem; align-items: center;">
-          <button class="fav-btn ${isFav ? 'active' : ''}">★</button>
-        </div>
+        <button class="fav-btn ${isFav ? 'active' : ''}">★</button>
       </div>
     `;
 
@@ -487,7 +514,6 @@ class App {
 
     this.viewSongTitle.textContent = song.title;
     this.viewSongArtist.textContent = song.artist;
-    this.viewSongKey.textContent = `Tono: ${song.key}`;
     this.viewSongRhythm.textContent = `Ritmo: ${song.rhythm}`;
     this.viewSongCapo.textContent = song.capo || "Sin capo";
     this.viewSongGenre.textContent = song.genre || "General";
@@ -514,12 +540,22 @@ class App {
     this.renderActiveSongSheet();
   }
 
+  // Render song sheet & update Active Key Display correlatively with chords
   renderActiveSongSheet() {
     if (!this.activeSong) return;
 
     const parsed = parseSongText(this.activeSong.rawText);
-    const transposedRootKey = transposeChord(parsed.key || this.activeSong.key, this.currentSemitones, this.preferFlat);
+
+    // Determine the base root key: either from song metadata or first chord
+    let baseRootKey = this.activeSong.key;
+    if (!baseRootKey || baseRootKey === 'General') {
+      baseRootKey = parsed.key || 'C';
+    }
+
+    // Transpose the base root key correlatively
+    const transposedRootKey = transposeChord(baseRootKey, this.currentSemitones, this.preferFlat);
     this.activeKeyDisplay.textContent = transposedRootKey;
+    this.viewSongKey.textContent = `Tono: ${transposedRootKey}`;
 
     this.lyricSheet.innerHTML = '';
 
@@ -569,7 +605,7 @@ class App {
           const transposed = transposeChord(c, this.currentSemitones, this.preferFlat);
           const chordBadge = document.createElement('span');
           chordBadge.className = 'chord-badge';
-          chordBadge.style.marginRight = '0.5rem';
+          chordBadge.style.marginRight = '0.4rem';
           chordBadge.textContent = transposed;
 
           chordBadge.addEventListener('click', (e) => {
@@ -584,7 +620,7 @@ class App {
       } else if (item.type === 'lyric-only') {
         const lineEl = document.createElement('div');
         lineEl.className = 'lyric-text';
-        lineEl.style.marginBottom = '0.4rem';
+        lineEl.style.marginBottom = '0.35rem';
         lineEl.textContent = item.line;
         this.lyricSheet.appendChild(lineEl);
       }
@@ -655,7 +691,6 @@ class App {
     }
   }
 
-  // Import / Create Modal
   openImportModal() {
     this.importModalOverlay.classList.add('open');
   }
@@ -713,7 +748,6 @@ class App {
     this.openSong(newSong);
   }
 
-  // Full Song Edit Modal
   openEditModal() {
     if (!this.activeSong) return;
 
